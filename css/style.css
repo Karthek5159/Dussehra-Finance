@@ -1,0 +1,3012 @@
+/* =========================================================
+   DUSSEHRA FINANCE
+   GLOBAL STYLESHEET
+   Premium Maroon + Black + Gold + Glass
+   ========================================================= */
+
+
+/* =========================================================
+   1. ROOT VARIABLES
+   ========================================================= */
+
+:root {
+
+    --df-black: #090607;
+    --df-black-soft: #110a0b;
+
+    --df-maroon-dark: #26090d;
+    --df-maroon: #65121b;
+    --df-maroon-light: #8f2631;
+
+    --df-gold: #d4af37;
+    --df-gold-light: #f0d477;
+    --df-gold-dark: #a47e18;
+
+    --df-white: #f7f3ed;
+    --df-white-soft: #ddd5cc;
+    --df-muted: #a99e96;
+
+    --df-border: rgba(212, 175, 55, 0.22);
+    --df-border-soft: rgba(255, 255, 255, 0.08);
+
+    --df-glass: rgba(255, 255, 255, 0.045);
+    --df-glass-strong: rgba(255, 255, 255, 0.065);
+
+    --df-shadow:
+        0 18px 55px rgba(0, 0, 0, 0.38);
+
+    --df-shadow-soft:
+        0 10px 35px rgba(0, 0, 0, 0.25);
+
+    --df-radius: 16px;
+    --df-radius-small: 10px;
+
+    --df-transition:
+        180ms ease;
+}
+
+
+/* =========================================================
+   2. RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+
+    min-height: 100vh;
+
+    font-family:
+        Inter,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    color: var(--df-white);
+
+    background:
+        radial-gradient(
+            circle at 15% 0%,
+            rgba(101, 18, 27, 0.38),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(212, 175, 55, 0.08),
+            transparent 28%
+        ),
+        linear-gradient(
+            135deg,
+            #080506 0%,
+            #14090b 48%,
+            #080506 100%
+        );
+
+    line-height: 1.5;
+
+    overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   3. APPLICATION
+   ========================================================= */
+
+#app {
+
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* =========================================================
+   4. HEADER
+   ========================================================= */
+
+.site-header {
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    background:
+        rgba(9, 6, 7, 0.88);
+
+    border-bottom:
+        1px solid var(--df-border);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.header-inner {
+
+    width:
+        min(1540px, calc(100% - 40px));
+
+    min-height: 82px;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+}
+
+
+/* ---------------------------------------------------------
+   BRAND
+   --------------------------------------------------------- */
+
+.brand {
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    min-width: 0;
+}
+
+.brand-mark {
+
+    width: 48px;
+    height: 48px;
+
+    flex: 0 0 48px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius: 50%;
+
+    color:
+        var(--df-gold-light);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(101, 18, 27, 0.95),
+            rgba(35, 8, 11, 0.95)
+        );
+
+    box-shadow:
+        0 0 25px rgba(212, 175, 55, 0.08);
+
+    font-size: 24px;
+}
+
+.brand-text {
+    min-width: 0;
+}
+
+.brand-text h1 {
+
+    color:
+        var(--df-white);
+
+    font-size: 21px;
+    font-weight: 700;
+
+    letter-spacing: 0.02em;
+
+    white-space: nowrap;
+}
+
+.brand-text p {
+
+    margin-top: 2px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.14em;
+}
+
+
+/* ---------------------------------------------------------
+   HEADER ACTIONS
+   --------------------------------------------------------- */
+
+.header-actions {
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+}
+
+.connection-status {
+
+    color:
+        var(--df-muted);
+
+    font-size: 12px;
+
+    white-space: nowrap;
+}
+
+.login-button {
+
+    min-height: 40px;
+
+    padding:
+        0 18px;
+
+    border:
+        1px solid var(--df-gold-dark);
+
+    border-radius: 9px;
+
+    color:
+        var(--df-white);
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--df-maroon),
+            var(--df-maroon-dark)
+        );
+
+    transition:
+        transform var(--df-transition),
+        border-color var(--df-transition),
+        box-shadow var(--df-transition);
+}
+
+.login-button:hover {
+
+    transform:
+        translateY(-1px);
+
+    border-color:
+        var(--df-gold);
+
+    box-shadow:
+        0 7px 22px rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   5. NAVIGATION
+   ========================================================= */
+
+.main-navigation {
+
+    position: sticky;
+
+    top: 82px;
+
+    z-index: 90;
+
+    background:
+        rgba(15, 8, 9, 0.86);
+
+    border-bottom:
+        1px solid var(--df-border-soft);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.navigation-inner {
+
+    width:
+        min(1540px, calc(100% - 40px));
+
+    min-height: 52px;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+}
+
+.navigation-inner::-webkit-scrollbar {
+    display: none;
+}
+
+.nav-item {
+
+    position: relative;
+
+    flex: 0 0 auto;
+
+    height: 52px;
+
+    padding:
+        0 17px;
+
+    border: 0;
+
+    color:
+        var(--df-muted);
+
+    background:
+        transparent;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition:
+        color var(--df-transition),
+        background var(--df-transition);
+}
+
+.nav-item::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 17px;
+    right: 17px;
+
+    bottom: 0;
+
+    height: 2px;
+
+    background:
+        var(--df-gold);
+
+    transform:
+        scaleX(0);
+
+    transform-origin:
+        center;
+
+    transition:
+        transform var(--df-transition);
+}
+
+.nav-item:hover {
+
+    color:
+        var(--df-white);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.nav-item.active {
+
+    color:
+        var(--df-gold-light);
+}
+
+.nav-item.active::after {
+
+    transform:
+        scaleX(1);
+}
+
+
+/* =========================================================
+   6. MAIN CONTENT
+   ========================================================= */
+
+.main-content {
+
+    width:
+        min(1540px, calc(100% - 40px));
+
+    flex: 1;
+
+    margin: 0 auto;
+
+    padding:
+        32px 0 70px;
+}
+
+
+/* =========================================================
+   7. PAGE SECTIONS
+   ========================================================= */
+
+.page-section {
+    display: none;
+}
+
+.page-section.active {
+    display: block;
+}
+
+
+/* =========================================================
+   8. PAGE HEADING
+   ========================================================= */
+
+.page-heading {
+
+    display: flex;
+
+    align-items: flex-end;
+
+    justify-content: space-between;
+
+    gap: 25px;
+
+    margin-bottom: 28px;
+}
+
+.page-heading h2 {
+
+    margin-top: 5px;
+
+    color:
+        var(--df-white);
+
+    font-size:
+        clamp(27px, 3vw, 38px);
+
+    line-height: 1.1;
+
+    letter-spacing: -0.02em;
+}
+
+.page-heading p {
+
+    margin-top: 8px;
+
+    max-width: 700px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 14px;
+}
+
+.section-label {
+
+    display: block;
+
+    color:
+        var(--df-gold);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.17em;
+
+    text-transform: uppercase;
+}
+
+
+/* ---------------------------------------------------------
+   FESTIVAL INFORMATION
+   --------------------------------------------------------- */
+
+.festival-info {
+
+    min-width: 220px;
+
+    padding:
+        13px 16px;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius:
+        var(--df-radius-small);
+
+    background:
+        var(--df-glass);
+}
+
+.festival-info span {
+
+    display: block;
+
+    color:
+        var(--df-muted);
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.12em;
+}
+
+.festival-info strong {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   9. SUMMARY CARDS
+   ========================================================= */
+
+.summary-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-bottom: 18px;
+}
+
+.summary-card {
+
+    position: relative;
+
+    min-height: 145px;
+
+    padding: 22px;
+
+    overflow: hidden;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius:
+        var(--df-radius);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    box-shadow:
+        var(--df-shadow-soft);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    transition:
+        transform var(--df-transition),
+        border-color var(--df-transition);
+}
+
+.summary-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--df-gold),
+            transparent
+        );
+
+    opacity: 0.7;
+}
+
+.summary-card:hover {
+
+    transform:
+        translateY(-2px);
+
+    border-color:
+        var(--df-border);
+}
+
+.card-label {
+
+    display: block;
+
+    color:
+        var(--df-muted);
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+}
+
+.card-value {
+
+    display: block;
+
+    margin-top: 10px;
+
+    color:
+        var(--df-white);
+
+    font-size:
+        clamp(23px, 2.2vw, 31px);
+
+    line-height: 1.1;
+
+    font-weight: 700;
+
+    letter-spacing: -0.02em;
+}
+
+.summary-card small {
+
+    display: block;
+
+    margin-top: 8px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 11px;
+}
+
+.income-card .card-value,
+.received-card .card-value {
+    color: #e7c866;
+}
+
+.pending-card .card-value {
+    color: #dcbf77;
+}
+
+.expense-card .card-value {
+    color: #e5b4a9;
+}
+
+.balance-card .card-value {
+    color:
+        var(--df-gold-light);
+}
+
+.budget-card .card-value {
+    color:
+        var(--df-white);
+}
+
+
+/* =========================================================
+   10. DASHBOARD GRID
+   ========================================================= */
+
+.dashboard-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 18px;
+}
+
+
+/* =========================================================
+   11. CARDS
+   ========================================================= */
+
+.dashboard-card,
+.data-card {
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius:
+        var(--df-radius);
+
+    background:
+        var(--df-glass);
+
+    box-shadow:
+        var(--df-shadow-soft);
+
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+.dashboard-card {
+    padding: 23px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.card-heading {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.card-heading h3 {
+
+    margin-top: 5px;
+
+    color:
+        var(--df-white);
+
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   12. BREAKDOWN
+   ========================================================= */
+
+.breakdown-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+.breakdown-row {
+
+    min-height: 51px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding:
+        0 4px;
+
+    border-bottom:
+        1px solid var(--df-border-soft);
+}
+
+.breakdown-row:last-child {
+    border-bottom: 0;
+}
+
+.breakdown-row span {
+
+    color:
+        var(--df-white-soft);
+
+    font-size: 13px;
+}
+
+.breakdown-row strong {
+
+    color:
+        var(--df-white);
+
+    font-size: 14px;
+}
+
+.breakdown-row.total-row {
+
+    margin-top: 8px;
+
+    padding:
+        10px 12px;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius: 9px;
+
+    background:
+        rgba(212, 175, 55, 0.055);
+}
+
+.breakdown-row.total-row span {
+
+    color:
+        var(--df-gold-light);
+
+    font-weight: 600;
+}
+
+.breakdown-row.total-row strong {
+
+    color:
+        var(--df-gold-light);
+}
+
+
+/* =========================================================
+   13. QUICK ACCESS
+   ========================================================= */
+
+.quick-access {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+}
+
+.quick-button {
+
+    min-height: 72px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px;
+
+    text-align: left;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius: 11px;
+
+    color:
+        var(--df-white);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    transition:
+        background var(--df-transition),
+        border-color var(--df-transition),
+        transform var(--df-transition);
+}
+
+.quick-button:hover {
+
+    transform:
+        translateY(-1px);
+
+    border-color:
+        var(--df-border);
+
+    background:
+        rgba(101, 18, 27, 0.22);
+}
+
+.quick-button > span {
+
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius: 9px;
+
+    color:
+        var(--df-gold-light);
+
+    background:
+        rgba(101, 18, 27, 0.25);
+
+    font-weight: 700;
+}
+
+.quick-button strong {
+
+    display: block;
+
+    color:
+        var(--df-white);
+
+    font-size: 13px;
+}
+
+.quick-button small {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   14. EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+
+    min-height: 180px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 25px;
+
+    text-align: center;
+}
+
+.empty-icon {
+
+    width: 50px;
+    height: 50px;
+
+    display: grid;
+    place-items: center;
+
+    margin-bottom: 12px;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius: 50%;
+
+    color:
+        var(--df-gold);
+
+    background:
+        rgba(101, 18, 27, 0.22);
+
+    font-size: 20px;
+}
+
+.empty-state h4 {
+
+    color:
+        var(--df-white);
+
+    font-size: 15px;
+}
+
+.empty-state p {
+
+    max-width: 430px;
+
+    margin-top: 6px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   15. DATA MODULES
+   ========================================================= */
+
+.module-summary {
+
+    min-height: 75px;
+
+    display: flex;
+
+    align-items: center;
+
+    margin-bottom: 18px;
+
+    padding:
+        18px 20px;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius:
+        var(--df-radius-small);
+
+    color:
+        var(--df-muted);
+
+    background:
+        var(--df-glass);
+}
+
+.data-card {
+    overflow: hidden;
+}
+
+.table-container {
+
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+.table-container table {
+
+    width: 100%;
+
+    min-width: 850px;
+
+    border-collapse: collapse;
+}
+
+.table-container th {
+
+    padding:
+        14px 16px;
+
+    color:
+        var(--df-gold-light);
+
+    background:
+        rgba(101, 18, 27, 0.25);
+
+    border-bottom:
+        1px solid var(--df-border);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-align: left;
+
+    letter-spacing: 0.1em;
+
+    text-transform: uppercase;
+}
+
+.table-container td {
+
+    padding:
+        14px 16px;
+
+    color:
+        var(--df-white-soft);
+
+    border-bottom:
+        1px solid var(--df-border-soft);
+
+    font-size: 13px;
+}
+
+.table-container tbody tr:hover {
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.table-container tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* =========================================================
+   16. BUTTONS
+   ========================================================= */
+
+.primary-button {
+
+    min-height: 43px;
+
+    padding:
+        0 18px;
+
+    border:
+        1px solid var(--df-gold-dark);
+
+    border-radius: 9px;
+
+    color:
+        #fff8e5;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--df-maroon-light),
+            var(--df-maroon-dark)
+        );
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.25);
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    transition:
+        transform var(--df-transition),
+        border-color var(--df-transition),
+        box-shadow var(--df-transition);
+}
+
+.primary-button:hover {
+
+    transform:
+        translateY(-1px);
+
+    border-color:
+        var(--df-gold);
+
+    box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+.full-button {
+    width: 100%;
+}
+
+
+/* =========================================================
+   17. ADMIN VISIBILITY
+   ========================================================= */
+
+.admin-only {
+    display: none;
+}
+
+body.admin-mode .admin-only {
+    display: inline-flex;
+}
+
+body.admin-mode .login-button {
+
+    border-color:
+        var(--df-gold);
+}
+
+
+/* =========================================================
+   18. MODAL
+   ========================================================= */
+
+.modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        rgba(0, 0, 0, 0.76);
+
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+}
+
+.modal-box {
+
+    position: relative;
+
+    z-index: 1;
+
+    width:
+        min(430px, 100%);
+
+    padding: 27px;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius:
+        var(--df-radius);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(42, 12, 16, 0.97),
+            rgba(11, 7, 8, 0.98)
+        );
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.6);
+}
+
+.modal-close {
+
+    position: absolute;
+
+    top: 13px;
+    right: 15px;
+
+    width: 34px;
+    height: 34px;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    color:
+        var(--df-muted);
+
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    font-size: 23px;
+
+    line-height: 1;
+
+    transition:
+        color var(--df-transition),
+        background var(--df-transition);
+}
+
+.modal-close:hover {
+
+    color:
+        var(--df-white);
+
+    background:
+        rgba(255, 255, 255, 0.09);
+}
+
+.modal-header {
+    margin-bottom: 23px;
+}
+
+.modal-header h2 {
+
+    margin-top: 5px;
+
+    color:
+        var(--df-white);
+
+    font-size: 24px;
+}
+
+.modal-header p {
+
+    margin-top: 7px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   19. FORM ELEMENTS
+   ========================================================= */
+
+.form-group {
+
+    margin-bottom: 17px;
+}
+
+.form-group label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    color:
+        var(--df-white-soft);
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+
+    width: 100%;
+
+    min-height: 44px;
+
+    padding:
+        0 13px;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    color:
+        var(--df-white);
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    transition:
+        border-color var(--df-transition),
+        box-shadow var(--df-transition),
+        background var(--df-transition);
+}
+
+.form-group textarea {
+
+    min-height: 100px;
+
+    padding-top: 11px;
+
+    resize: vertical;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+
+    color:
+        #756c67;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+
+    border-color:
+        var(--df-gold-dark);
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    box-shadow:
+        0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+.form-message {
+
+    min-height: 18px;
+
+    margin-bottom: 12px;
+
+    color:
+        #e0a99d;
+
+    font-size: 12px;
+}
+/* =========================================================
+   20. FINANCE ENTRY MODALS
+   Premium aligned finance forms
+   ========================================================= */
+
+/*
+   Used by:
+   - Add Income
+   - Add Expense
+   - Add Rental
+   - Add Transport
+*/
+
+.finance-form-modal {
+    position: fixed;
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    z-index: 1100;
+}
+
+.finance-form-modal.open {
+    display: flex;
+}
+
+
+/* ---------------------------------------------------------
+   FORM MODAL BOX
+   --------------------------------------------------------- */
+
+.finance-form-modal .form-modal-box {
+    position: relative;
+    z-index: 1;
+
+    width: min(760px, 100%);
+    max-width: 760px;
+
+    max-height: calc(100vh - 40px);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 30px;
+
+    border: 1px solid var(--df-border);
+    border-radius: var(--df-radius);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(42, 12, 16, 0.98),
+            rgba(11, 7, 8, 0.99)
+        );
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.65);
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(212, 175, 55, 0.35)
+        rgba(255, 255, 255, 0.025);
+}
+
+.finance-form-modal .form-modal-box::-webkit-scrollbar {
+    width: 7px;
+}
+
+.finance-form-modal .form-modal-box::-webkit-scrollbar-track {
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.finance-form-modal .form-modal-box::-webkit-scrollbar-thumb {
+    border-radius: 20px;
+
+    background:
+        rgba(212, 175, 55, 0.35);
+}
+
+
+/* ---------------------------------------------------------
+   FORM HEADER
+   --------------------------------------------------------- */
+
+.finance-form .modal-header {
+    margin-bottom: 25px;
+    padding-right: 38px;
+}
+
+.finance-form .modal-header h2 {
+    margin-top: 4px;
+
+    color:
+        var(--df-white);
+
+    font-size: 25px;
+    font-weight: 700;
+
+    line-height: 1.2;
+}
+
+.finance-form .modal-header p {
+    margin-top: 7px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   FORM GRID
+   --------------------------------------------------------- */
+
+.finance-form .form-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    column-gap: 20px;
+    row-gap: 18px;
+
+    width: 100%;
+}
+
+
+/* ---------------------------------------------------------
+   FORM GROUP
+   --------------------------------------------------------- */
+
+.finance-form .form-group {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ---------------------------------------------------------
+   FULL WIDTH FIELD
+   --------------------------------------------------------- */
+
+.finance-form .form-group-full {
+    grid-column: 1 / -1;
+}
+
+
+/* ---------------------------------------------------------
+   LABEL
+   --------------------------------------------------------- */
+
+.finance-form .form-group label {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+
+    min-height: 18px;
+
+    margin: 0 0 8px;
+
+    color:
+        var(--df-white-soft);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    line-height: 18px;
+}
+
+
+/* Required marker */
+
+.finance-form .required {
+    margin-left: 3px;
+
+    color:
+        var(--df-gold-light);
+}
+
+
+/* ---------------------------------------------------------
+   ALL FORM CONTROLS
+   --------------------------------------------------------- */
+
+.finance-form .form-group input,
+.finance-form .form-group select,
+.finance-form .form-group textarea {
+
+    box-sizing: border-box;
+
+    width: 100%;
+    max-width: 100%;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    color:
+        var(--df-white);
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    font-family: inherit;
+
+    transition:
+        border-color var(--df-transition),
+        box-shadow var(--df-transition),
+        background var(--df-transition);
+}
+
+
+/* ---------------------------------------------------------
+   INPUT + SELECT
+   EXACT SAME HEIGHT
+   --------------------------------------------------------- */
+
+.finance-form .form-group input,
+.finance-form .form-group select {
+
+    height: 46px;
+    min-height: 46px;
+
+    padding:
+        0 13px;
+
+    line-height: normal;
+}
+
+
+/* ---------------------------------------------------------
+   TEXTAREA
+   --------------------------------------------------------- */
+
+.finance-form .form-group textarea {
+
+    min-height: 100px;
+
+    padding:
+        12px 13px;
+
+    line-height: 1.5;
+
+    resize: vertical;
+}
+
+
+/* ---------------------------------------------------------
+   PLACEHOLDER
+   --------------------------------------------------------- */
+
+.finance-form .form-group input::placeholder,
+.finance-form .form-group textarea::placeholder {
+
+    color:
+        #756c67;
+}
+
+
+/* ---------------------------------------------------------
+   FOCUS
+   --------------------------------------------------------- */
+
+.finance-form .form-group input:focus,
+.finance-form .form-group select:focus,
+.finance-form .form-group textarea:focus {
+
+    border-color:
+        var(--df-gold-dark);
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    box-shadow:
+        0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+
+/* ---------------------------------------------------------
+   DATE INPUT
+   --------------------------------------------------------- */
+
+.finance-form input[type="date"] {
+    color-scheme: dark;
+}
+
+
+/* ---------------------------------------------------------
+   NUMBER / AMOUNT
+   --------------------------------------------------------- */
+
+.finance-form input[type="number"] {
+
+    text-align: left;
+
+    font-variant-numeric:
+        tabular-nums;
+}
+
+
+/* Remove browser number arrows where possible */
+
+.finance-form input[type="number"]::-webkit-inner-spin-button,
+.finance-form input[type="number"]::-webkit-outer-spin-button {
+    margin: 0;
+}
+
+
+/* ---------------------------------------------------------
+   SELECT
+   --------------------------------------------------------- */
+
+.finance-form select {
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    padding-right: 42px !important;
+
+    cursor: pointer;
+
+    background-image:
+        linear-gradient(
+            45deg,
+            transparent 50%,
+            var(--df-gold-light) 50%
+        ),
+        linear-gradient(
+            135deg,
+            var(--df-gold-light) 50%,
+            transparent 50%
+        );
+
+    background-position:
+        calc(100% - 17px) 20px,
+        calc(100% - 12px) 20px;
+
+    background-size:
+        5px 5px,
+        5px 5px;
+
+    background-repeat: no-repeat;
+}
+
+.finance-form select option {
+
+    color:
+        var(--df-white);
+
+    background:
+        #241116;
+}
+
+
+/* ---------------------------------------------------------
+   AMOUNT INPUT
+   --------------------------------------------------------- */
+
+.amount-input {
+
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
+    min-width: 0;
+}
+
+
+.amount-input > span {
+
+    width: 45px;
+    min-width: 45px;
+    height: 46px;
+
+    flex:
+        0 0 45px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-right: 0;
+
+    border-radius:
+        9px 0 0 9px;
+
+    color:
+        var(--df-gold-light);
+
+    background:
+        rgba(101, 18, 27, 0.25);
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+.amount-input input {
+
+    flex: 1;
+
+    width: 0;
+    min-width: 0;
+
+    height: 46px;
+
+    border-radius:
+        0 9px 9px 0 !important;
+}
+
+
+.amount-input:focus-within > span {
+
+    border-color:
+        var(--df-gold-dark);
+
+    color:
+        var(--df-gold);
+}
+
+
+/* ---------------------------------------------------------
+   FORM MESSAGE
+   --------------------------------------------------------- */
+
+.finance-form .form-message {
+
+    width: 100%;
+
+    min-height: 18px;
+
+    margin:
+        0 0 4px;
+
+    font-size: 12px;
+
+    line-height: 18px;
+}
+
+.finance-form .form-message:empty {
+
+    min-height: 0;
+    margin: 0;
+}
+
+.finance-form .form-message.success {
+
+    color:
+        var(--df-gold-light);
+}
+
+.finance-form .form-message.error {
+
+    color:
+        #e0a99d;
+}
+
+
+/* ---------------------------------------------------------
+   FORM ACTIONS
+   --------------------------------------------------------- */
+
+.finance-form .form-actions {
+
+    grid-column: 1 / -1;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 11px;
+
+    width: 100%;
+
+    margin-top: 2px;
+    padding-top: 19px;
+
+    border-top:
+        1px solid var(--df-border-soft);
+}
+
+
+/* ---------------------------------------------------------
+   CANCEL BUTTON
+   --------------------------------------------------------- */
+
+.finance-form .form-actions .secondary-button {
+
+    width: auto;
+    min-width: 100px;
+
+    min-height: 43px;
+
+    padding:
+        0 18px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ---------------------------------------------------------
+   SAVE BUTTON
+   --------------------------------------------------------- */
+
+.finance-form .form-actions .primary-button {
+
+    width: auto;
+    min-width: 135px;
+
+    min-height: 43px;
+
+    padding:
+        0 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   21. RECENT FINANCIAL ACTIVITY
+   ========================================================= */
+
+.transactions-card {
+
+    width: 100%;
+
+    overflow: hidden;
+}
+
+.transactions-heading {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 24px;
+
+    margin-bottom: 22px;
+}
+
+.transactions-heading > div:first-child {
+    min-width: 0;
+}
+
+.transactions-heading h3 {
+
+    margin:
+        5px 0 5px;
+
+    color:
+        var(--df-white);
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    line-height: 1.3;
+
+    letter-spacing: 0.2px;
+}
+
+.transactions-description {
+
+    margin: 0;
+
+    color:
+        var(--df-muted);
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   RECORD COUNT
+   --------------------------------------------------------- */
+
+.transaction-meta {
+
+    flex:
+        0 0 auto;
+
+    min-width: 86px;
+
+    padding:
+        9px 14px;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius:
+        var(--df-radius-small);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(101, 18, 27, 0.28),
+            rgba(212, 175, 55, 0.05)
+        );
+
+    text-align: center;
+}
+
+.transaction-count-label {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.4px;
+}
+
+.transaction-meta strong {
+
+    display: block;
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    line-height: 1.2;
+}
+
+
+/* ---------------------------------------------------------
+   TRANSACTION TABLE WRAPPER
+   --------------------------------------------------------- */
+
+.recent-transactions {
+
+    width: 100%;
+
+    min-height: 0;
+}
+
+.recent-transactions .table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius: 12px;
+
+    background:
+        rgba(0, 0, 0, 0.18);
+
+    scrollbar-width: thin;
+}
+
+.recent-transactions .table-wrapper::-webkit-scrollbar {
+    height: 7px;
+}
+
+.recent-transactions .table-wrapper::-webkit-scrollbar-track {
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.recent-transactions .table-wrapper::-webkit-scrollbar-thumb {
+
+    border-radius: 20px;
+
+    background:
+        rgba(212, 175, 55, 0.35);
+}
+
+
+/* ---------------------------------------------------------
+   TRANSACTION TABLE
+   --------------------------------------------------------- */
+
+.recent-transactions table {
+
+    width: 100%;
+
+    min-width: 820px;
+
+    border-collapse: collapse;
+
+    table-layout: fixed;
+}
+
+
+/* ---------------------------------------------------------
+   TABLE HEADER
+   --------------------------------------------------------- */
+
+.recent-transactions thead {
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(101, 18, 27, 0.34),
+            rgba(38, 9, 13, 0.28)
+        );
+}
+
+.recent-transactions th {
+
+    padding:
+        13px 16px;
+
+    border-bottom:
+        1px solid var(--df-border);
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+
+    text-align: left;
+
+    white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   COLUMN WIDTHS
+   --------------------------------------------------------- */
+
+.recent-transactions th:nth-child(1),
+.recent-transactions td:nth-child(1) {
+    width: 115px;
+}
+
+.recent-transactions th:nth-child(2),
+.recent-transactions td:nth-child(2) {
+    width: 105px;
+}
+
+.recent-transactions th:nth-child(3),
+.recent-transactions td:nth-child(3) {
+    width: 25%;
+}
+
+.recent-transactions th:nth-child(4),
+.recent-transactions td:nth-child(4) {
+    width: 20%;
+}
+
+.recent-transactions th:nth-child(5),
+.recent-transactions td:nth-child(5) {
+
+    width: 150px;
+
+    text-align: right;
+}
+
+
+/* ---------------------------------------------------------
+   TABLE BODY
+   --------------------------------------------------------- */
+
+.recent-transactions tbody tr {
+
+    transition:
+        background var(--df-transition),
+        box-shadow var(--df-transition);
+}
+
+.recent-transactions tbody tr:not(:last-child) {
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.055);
+}
+
+.recent-transactions tbody tr:hover {
+
+    background:
+        rgba(101, 18, 27, 0.14);
+}
+
+.recent-transactions td {
+
+    padding:
+        15px 16px;
+
+    color:
+        var(--df-white-soft);
+
+    font-size: 13px;
+
+    line-height: 1.4;
+
+    vertical-align: middle;
+}
+
+
+/* ---------------------------------------------------------
+   DATE
+   --------------------------------------------------------- */
+
+.recent-transactions td:first-child {
+
+    color:
+        var(--df-muted);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   DESCRIPTION
+   --------------------------------------------------------- */
+
+.recent-transactions td:nth-child(3) {
+
+    color:
+        var(--df-white);
+
+    font-weight: 650;
+}
+
+
+/* ---------------------------------------------------------
+   CATEGORY
+   --------------------------------------------------------- */
+
+.recent-transactions td:nth-child(4) {
+
+    color:
+        var(--df-muted);
+}
+
+
+/* ---------------------------------------------------------
+   AMOUNT
+   --------------------------------------------------------- */
+
+.recent-transactions td:nth-child(5) {
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+    text-align: right;
+
+    white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   TRANSACTION TYPE BADGE
+   --------------------------------------------------------- */
+
+.transaction-type {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 76px;
+
+    padding:
+        5px 9px;
+
+    border:
+        1px solid rgba(212, 175, 55, 0.22);
+
+    border-radius: 999px;
+
+    background:
+        rgba(212, 175, 55, 0.07);
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.8px;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   TRANSACTION STATUS
+   --------------------------------------------------------- */
+
+.transaction-status {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 72px;
+
+    padding:
+        5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.7px;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.transaction-status.received,
+.transaction-status.paid {
+
+    border:
+        1px solid rgba(212, 175, 55, 0.25);
+
+    background:
+        rgba(212, 175, 55, 0.08);
+
+    color:
+        var(--df-gold-light);
+}
+
+.transaction-status.pending {
+
+    border:
+        1px solid rgba(143, 38, 49, 0.42);
+
+    background:
+        rgba(101, 18, 27, 0.20);
+
+    color:
+        #e6b5a8;
+}
+
+
+/* ---------------------------------------------------------
+   TRANSACTION EMPTY STATE
+   --------------------------------------------------------- */
+
+.transaction-empty-state {
+
+    min-height: 170px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 16px;
+
+    padding: 28px;
+
+    border:
+        1px dashed rgba(212, 175, 55, 0.20);
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(101, 18, 27, 0.10),
+            rgba(0, 0, 0, 0.15)
+        );
+
+    text-align: left;
+}
+
+.transaction-empty-icon {
+
+    width: 48px;
+    height: 48px;
+
+    flex:
+        0 0 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border:
+        1px solid var(--df-border);
+
+    border-radius: 50%;
+
+    background:
+        rgba(212, 175, 55, 0.07);
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 20px;
+
+    font-weight: 800;
+}
+
+.transaction-empty-state h4 {
+
+    margin:
+        0 0 5px;
+
+    color:
+        var(--df-white);
+
+    font-size: 15px;
+}
+
+.transaction-empty-state p {
+
+    margin: 0;
+
+    color:
+        var(--df-muted);
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   22. FOOTER
+   ========================================================= */
+
+.site-footer {
+
+    border-top:
+        1px solid var(--df-border-soft);
+
+    background:
+        rgba(5, 4, 4, 0.72);
+}
+
+.footer-inner {
+
+    width:
+        min(1540px, calc(100% - 40px));
+
+    min-height: 78px;
+
+    margin: 0 auto;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 11px;
+}
+
+.footer-inner strong {
+
+    display: block;
+
+    color:
+        var(--df-white-soft);
+
+    font-size: 12px;
+}
+
+.footer-inner span {
+
+    display: block;
+
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   23. RESPONSIVE — TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .summary-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .page-heading {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .festival-info {
+
+        width: 100%;
+    }
+
+    /* Finance forms */
+
+    .finance-form-modal .form-modal-box {
+
+        width:
+            min(680px, 100%);
+    }
+}
+
+
+/* =========================================================
+   24. RESPONSIVE — MOBILE
+   ========================================================= */
+
+@media (max-width: 680px) {
+
+    .header-inner,
+    .navigation-inner,
+    .main-content,
+    .footer-inner {
+
+        width:
+            calc(100% - 24px);
+    }
+
+
+    /* Header */
+
+    .header-inner {
+
+        min-height: 72px;
+
+        gap: 12px;
+    }
+
+    .brand-mark {
+
+        width: 41px;
+        height: 41px;
+
+        flex-basis: 41px;
+
+        font-size: 20px;
+    }
+
+    .brand-text h1 {
+        font-size: 16px;
+    }
+
+    .brand-text p {
+        font-size: 8px;
+    }
+
+    .connection-status {
+        display: none;
+    }
+
+    .login-button {
+
+        min-height: 37px;
+
+        padding:
+            0 12px;
+
+        font-size: 11px;
+    }
+
+
+    /* Navigation */
+
+    .main-navigation {
+        top: 72px;
+    }
+
+    .navigation-inner {
+        min-height: 48px;
+    }
+
+    .nav-item {
+
+        height: 48px;
+
+        padding:
+            0 13px;
+
+        font-size: 12px;
+    }
+
+    .nav-item::after {
+
+        left: 13px;
+        right: 13px;
+    }
+
+
+    /* Main */
+
+    .main-content {
+
+        padding:
+            23px 0 50px;
+    }
+
+    .page-heading {
+
+        margin-bottom: 21px;
+    }
+
+    .page-heading h2 {
+        font-size: 27px;
+    }
+
+    .page-heading p {
+        font-size: 12px;
+    }
+
+
+    /* Summary */
+
+    .summary-grid {
+
+        grid-template-columns:
+            1fr;
+
+        gap: 11px;
+    }
+
+    .summary-card {
+
+        min-height: 120px;
+
+        padding: 18px;
+    }
+
+    .card-value {
+        font-size: 26px;
+    }
+
+
+    /* Cards */
+
+    .dashboard-card {
+        padding: 18px;
+    }
+
+
+    /* Quick access */
+
+    .quick-access {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .quick-button {
+        min-height: 65px;
+    }
+
+
+    /* Buttons */
+
+    .primary-button {
+        width: 100%;
+    }
+
+
+    /* Finance entry modal */
+
+    .finance-form-modal {
+
+        align-items:
+            flex-end;
+
+        padding:
+            10px;
+    }
+
+    .finance-form-modal .form-modal-box {
+
+        width: 100%;
+
+        max-height:
+            calc(100vh - 20px);
+
+        padding:
+            22px 18px;
+
+        border-radius:
+            16px 16px 12px 12px;
+    }
+
+    .finance-form .form-grid {
+
+        grid-template-columns:
+            1fr;
+
+        column-gap: 0;
+    }
+
+    .finance-form .form-group-full {
+
+        grid-column:
+            auto;
+    }
+
+    .finance-form .form-actions {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+        gap: 9px;
+
+        padding-top: 14px;
+    }
+
+    .finance-form .form-actions .primary-button,
+    .finance-form .form-actions .secondary-button {
+
+        width: 100%;
+
+        min-height: 45px;
+    }
+
+
+    /* Transactions */
+
+    .transactions-heading {
+
+        align-items: center;
+
+        gap: 14px;
+
+        margin-bottom: 16px;
+    }
+
+    .transactions-heading h3 {
+        font-size: 17px;
+    }
+
+    .transactions-description {
+        font-size: 12px;
+    }
+
+    .transaction-meta {
+
+        min-width: 70px;
+
+        padding:
+            8px 10px;
+    }
+
+    .transaction-count-label {
+        font-size: 8px;
+    }
+
+    .transaction-meta strong {
+        font-size: 16px;
+    }
+
+    .recent-transactions th {
+
+        padding:
+            11px 13px;
+
+        font-size: 9px;
+    }
+
+    .recent-transactions td {
+
+        padding:
+            13px;
+
+        font-size: 12px;
+    }
+
+    .recent-transactions td:nth-child(5) {
+        font-size: 13px;
+    }
+
+
+    /* Footer */
+
+    .footer-inner {
+
+        min-height: 90px;
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        justify-content: center;
+    }
+
+
+    /* Login modal */
+
+    .modal {
+        padding: 12px;
+    }
+
+    .modal-box {
+        padding: 22px;
+    }
+}
+
+
+/* =========================================================
+   25. VERY SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 390px) {
+
+    .brand-text p {
+        display: none;
+    }
+
+    .brand-text h1 {
+        font-size: 15px;
+    }
+
+    .login-button {
+        padding:
+            0 9px;
+    }
+
+    .page-heading h2 {
+        font-size: 24px;
+    }
+
+    .transactions-heading {
+        align-items: flex-start;
+    }
+
+    .transactions-heading h3 {
+        font-size: 16px;
+    }
+
+    .transactions-description {
+        max-width: 220px;
+    }
+
+    .transaction-meta {
+        min-width: 62px;
+    }
+
+    .transaction-empty-state {
+
+        flex-direction: column;
+
+        text-align: center;
+    }
+
+
+    /* Very small finance form */
+
+    .finance-form-modal .form-modal-box {
+
+        padding:
+            20px 15px;
+    }
+
+    .modal-header h2 {
+        font-size: 21px;
+    }
+}
+
+
+/* =========================================================
+   26. ACCESSIBILITY
+   ========================================================= */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+
+    outline:
+        2px solid var(--df-gold);
+
+    outline-offset:
+        2px;
+}
+
+
+/* =========================================================
+   27. REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+
+        scroll-behavior:
+            auto !important;
+
+        transition:
+            none !important;
+    }
+}

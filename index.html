@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<meta
+    name="theme-color"
+    content="#170709"
+>
+
+<title>Dussehra Finance</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+<body>
+
+<!-- =====================================================
+     APPLICATION
+     ===================================================== -->
+
+<div id="app">
+
+    <!-- =================================================
+         HEADER
+         ================================================= -->
+
+    <header class="site-header">
+
+        <div class="header-inner">
+
+            <div class="brand">
+
+                <div class="brand-mark">
+                    ॐ
+                </div>
+
+                <div class="brand-text">
+                    <h1>Dussehra Finance</h1>
+                    <p>Festival Finance Management</p>
+                </div>
+
+            </div>
+
+            <div class="header-actions">
+
+                <span
+                    id="connectionStatus"
+                    class="connection-status"
+                >
+                    Connecting...
+                </span>
+
+                <button
+                    type="button"
+                    class="login-button"
+                    id="loginButton"
+                >
+                    Admin Login
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =================================================
+         NAVIGATION
+         ================================================= -->
+
+    <nav class="main-navigation">
+
+        <div class="navigation-inner">
+
+            <button
+                type="button"
+                class="nav-item active"
+                data-page="dashboard"
+            >
+                Dashboard
+            </button>
+
+            <button
+                type="button"
+                class="nav-item"
+                data-page="income"
+            >
+                Income
+            </button>
+
+            <button
+                type="button"
+                class="nav-item"
+                data-page="expenses"
+            >
+                Expenses
+            </button>
+
+            <button
+                type="button"
+                class="nav-item"
+                data-page="rentals"
+            >
+                Rentals
+            </button>
+
+            <button
+                type="button"
+                class="nav-item"
+                data-page="transport"
+            >
+                Transport
+            </button>
+
+            <button
+                type="button"
+                class="nav-item"
+                data-page="reports"
+            >
+                Reports
+            </button>
+
+        </div>
+
+    </nav>
+
+
+    <!-- =================================================
+         MAIN CONTENT
+         ================================================= -->
+
+    <main class="main-content">
+
+
+        <!-- =============================================
+             DASHBOARD
+             ============================================= -->
+
+        <section
+            id="dashboardPage"
+            class="page-section active"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        DUSSEHRA FINANCE
+                    </span>
+
+                    <h2>
+                        Festival Dashboard
+                    </h2>
+
+                    <p>
+                        Complete overview of festival income
+                        and expenditure.
+                    </p>
+
+                </div>
+
+                <div class="festival-info">
+
+                    <span>
+                        Festival
+                    </span>
+
+                    <strong id="festivalName">
+                        Dussehra Festival 2026
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- SUMMARY -->
+
+            <div class="summary-grid">
+
+                <article class="summary-card income-card">
+
+                    <span class="card-label">
+                        Total Income
+                    </span>
+
+                    <strong
+                        id="totalIncome"
+                        class="card-value"
+                    >
+                        ₹0.00
+                    </strong>
+
+                    <small>
+                        Expected income
+                    </small>
+
+                </article>
+
+
+                <article class="summary-card received-card">
+
+                    <span class="card-label">
+                        Received Income
+                    </span>
+
+                    <strong
+                        id="receivedIncome"
+                        class="card-value"
+                    >
+                        ₹0.00
+                    </strong>
+
+                    <small>
+                        Amount received
+                    </small>
+
+                </article>
+
+
+                <article class="summary-card pending-card">
+
+                    <span class="card-label">
+                        Pending Income
+                    </span>
+
+                    <strong
+                        id="pendingIncome"
+                        class="card-value"
+                    >
+                        ₹0.00
+                    </strong>
+
+                    <small>
+                        Amount yet to receive
+                    </small>
+
+                </article>
+
+
+                <article class="summary-card expense-card">
+
+                    <span class="card-label">
+                        Total Outgoing
+                    </span>
+
+                    <strong
+                        id="totalOutgoing"
+                        class="card-value"
+                    >
+                        ₹0.00
+                    </strong>
+
+                    <small>
+                        Expenses + rentals + transport
+                    </small>
+
+                </article>
+
+
+                <article class="summary-card balance-card">
+
+                    <span class="card-label">
+                        Cash Balance
+                    </span>
+
+                    <strong
+                        id="cashBalance"
+                        class="card-value"
+                    >
+                        ₹0.00
+                    </strong>
+
+                    <small>
+                        Received income − outgoing
+                    </small>
+
+                </article>
+
+
+                <article class="summary-card budget-card">
+
+                    <span class="card-label">
+                        Budget
+                    </span>
+
+                    <strong
+                        id="totalBudget"
+                        class="card-value"
+                    >
+                        ₹0.00
+                    </strong>
+
+                    <small>
+                        Planned budget
+                    </small>
+
+                </article>
+
+            </div>
+
+
+            <!-- OUTGOING -->
+
+            <div class="dashboard-grid">
+
+                <div class="dashboard-card">
+
+                    <div class="card-heading">
+
+                        <div>
+
+                            <span class="section-label">
+                                FINANCE BREAKDOWN
+                            </span>
+
+                            <h3>
+                                Outgoing Summary
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="breakdown-list">
+
+                        <div class="breakdown-row">
+
+                            <span>
+                                Expenses
+                            </span>
+
+                            <strong id="expenseTotal">
+                                ₹0.00
+                            </strong>
+
+                        </div>
+
+
+                        <div class="breakdown-row">
+
+                            <span>
+                                Rentals
+                            </span>
+
+                            <strong id="rentalTotal">
+                                ₹0.00
+                            </strong>
+
+                        </div>
+
+
+                        <div class="breakdown-row">
+
+                            <span>
+                                Transport
+                            </span>
+
+                            <strong id="transportTotal">
+                                ₹0.00
+                            </strong>
+
+                        </div>
+
+
+                        <div class="breakdown-row total-row">
+
+                            <span>
+                                Total Outgoing
+                            </span>
+
+                            <strong id="breakdownOutgoing">
+                                ₹0.00
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- QUICK ACCESS -->
+
+                <div class="dashboard-card">
+
+                    <div class="card-heading">
+
+                        <div>
+
+                            <span class="section-label">
+                                MANAGEMENT
+                            </span>
+
+                            <h3>
+                                Quick Access
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-access">
+
+                        <button
+                            type="button"
+                            class="quick-button"
+                            data-page="income"
+                        >
+                            <span>₹</span>
+
+                            <div>
+
+                                <strong>
+                                    Income
+                                </strong>
+
+                                <small>
+                                    View income records
+                                </small>
+
+                            </div>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="quick-button"
+                            data-page="expenses"
+                        >
+                            <span>↘</span>
+
+                            <div>
+
+                                <strong>
+                                    Expenses
+                                </strong>
+
+                                <small>
+                                    View expense records
+                                </small>
+
+                            </div>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="quick-button"
+                            data-page="rentals"
+                        >
+                            <span>▣</span>
+
+                            <div>
+
+                                <strong>
+                                    Rentals
+                                </strong>
+
+                                <small>
+                                    View rental records
+                                </small>
+
+                            </div>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="quick-button"
+                            data-page="transport"
+                        >
+                            <span>↗</span>
+
+                            <div>
+
+                                <strong>
+                                    Transport
+                                </strong>
+
+                                <small>
+                                    View transport records
+                                </small>
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RECENT TRANSACTIONS -->
+
+            <div class="dashboard-card full-width transactions-card">
+
+                <div class="card-heading transactions-heading">
+
+                    <div>
+
+                        <span class="section-label">
+                            RECENT ACTIVITY
+                        </span>
+
+                        <h3>
+                            Financial Transactions
+                        </h3>
+
+                        <p class="transactions-description">
+                            Latest income and outgoing financial activity.
+                        </p>
+
+                    </div>
+
+
+                    <div class="transaction-meta">
+
+                        <span class="transaction-count-label">
+                            RECORDS
+                        </span>
+
+                        <strong id="transactionCount">
+                            0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="recentTransactions"
+                    class="recent-transactions"
+                >
+
+                    <div class="transaction-empty-state">
+
+                        <div class="transaction-empty-icon">
+                            ₹
+                        </div>
+
+                        <div>
+
+                            <h4>
+                                No transactions yet
+                            </h4>
+
+                            <p>
+                                Finance transactions will appear here
+                                once income or outgoing records are added.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================================
+             INCOME PAGE
+             ============================================= -->
+
+        <section
+            id="incomePage"
+            class="page-section"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        DUSSEHRA FINANCE
+                    </span>
+
+                    <h2>
+                        Income
+                    </h2>
+
+                    <p>
+                        Festival contributions,
+                        sponsorships and other income.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-only primary-button"
+                    id="addIncomeButton"
+                >
+                    + Add Income
+                </button>
+
+            </div>
+
+
+            <div
+                id="incomeSummary"
+                class="module-summary"
+            >
+                Loading...
+            </div>
+
+
+            <div class="data-card">
+
+                <div
+                    id="incomeTable"
+                    class="table-container"
+                >
+
+                    <div class="empty-state">
+
+                        <h4>
+                            No income records
+                        </h4>
+
+                        <p>
+                            Income records will appear here.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================================
+             EXPENSES PAGE
+             ============================================= -->
+
+        <section
+            id="expensesPage"
+            class="page-section"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        DUSSEHRA FINANCE
+                    </span>
+
+                    <h2>
+                        Expenses
+                    </h2>
+
+                    <p>
+                        Track food, pooja items, lighting,
+                        idol and other festival expenses.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-only primary-button"
+                    id="addExpenseButton"
+                >
+                    + Add Expense
+                </button>
+
+            </div>
+
+
+            <div
+                id="expenseSummary"
+                class="module-summary"
+            >
+                Loading...
+            </div>
+
+
+            <div class="data-card">
+
+                <div
+                    id="expenseTable"
+                    class="table-container"
+                >
+
+                    <div class="empty-state">
+
+                        <h4>
+                            No expense records
+                        </h4>
+
+                        <p>
+                            Expense records will appear here.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================================
+             RENTALS PAGE
+             ============================================= -->
+
+        <section
+            id="rentalsPage"
+            class="page-section"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        DUSSEHRA FINANCE
+                    </span>
+
+                    <h2>
+                        Rentals
+                    </h2>
+
+                    <p>
+                        Track rented vessels, equipment,
+                        cooking items and other rentals.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-only primary-button"
+                    id="addRentalButton"
+                >
+                    + Add Rental
+                </button>
+
+            </div>
+
+
+            <div
+                id="rentalSummary"
+                class="module-summary"
+            >
+                Loading...
+            </div>
+
+
+            <div class="data-card">
+
+                <div
+                    id="rentalTable"
+                    class="table-container"
+                >
+
+                    <div class="empty-state">
+
+                        <h4>
+                            No rental records
+                        </h4>
+
+                        <p>
+                            Rental records will appear here.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================================
+             TRANSPORT PAGE
+             ============================================= -->
+
+        <section
+            id="transportPage"
+            class="page-section"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        DUSSEHRA FINANCE
+                    </span>
+
+                    <h2>
+                        Transport
+                    </h2>
+
+                    <p>
+                        Track transportation and vehicle
+                        related festival expenses.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-only primary-button"
+                    id="addTransportButton"
+                >
+                    + Add Transport
+                </button>
+
+            </div>
+
+
+            <div
+                id="transportSummary"
+                class="module-summary"
+            >
+                Loading...
+            </div>
+
+
+            <div class="data-card">
+
+                <div
+                    id="transportTable"
+                    class="table-container"
+                >
+
+                    <div class="empty-state">
+
+                        <h4>
+                            No transport records
+                        </h4>
+
+                        <p>
+                            Transport records will appear here.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================================
+             REPORTS
+             ============================================= -->
+
+        <section
+            id="reportsPage"
+            class="page-section"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        DUSSEHRA FINANCE
+                    </span>
+
+                    <h2>
+                        Reports
+                    </h2>
+
+                    <p>
+                        View a complete financial summary
+                        of the festival.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ◈
+                    </div>
+
+                    <h4>
+                        Reports
+                    </h4>
+
+                    <p>
+                        Detailed financial reports will
+                        appear here.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =================================================
+         FOOTER
+         ================================================= -->
+
+    <footer class="site-footer">
+
+        <div class="footer-inner">
+
+            <div>
+
+                <strong>
+                    Dussehra Finance
+                </strong>
+
+                <span>
+                    Festival Finance Management
+                </span>
+
+            </div>
+
+
+            <div>
+
+                © <span id="currentYear">2026</span>
+                Dussehra Finance
+
+            </div>
+
+        </div>
+
+    </footer>
+
+</div>
+
+
+<!-- =====================================================
+     ADD INCOME MODAL
+     ===================================================== -->
+
+<div
+    id="incomeModal"
+    class="modal finance-form-modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-overlay"></div>
+
+    <div class="modal-box form-modal-box">
+
+        <button
+            type="button"
+            class="modal-close"
+            id="closeIncomeModal"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div class="modal-header">
+
+            <span class="section-label">
+                INCOME MANAGEMENT
+            </span>
+
+            <h2>
+                Add Income
+            </h2>
+
+            <p>
+                Enter a new festival income record.
+            </p>
+
+        </div>
+
+
+        <form
+            id="incomeForm"
+            class="finance-form"
+        >
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="incomeDate">
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="incomeDate"
+                        name="date"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="incomeName">
+                        Name / Source
+                    </label>
+
+                    <input
+                        type="text"
+                        id="incomeName"
+                        name="name"
+                        placeholder="Sponsor / Contributor name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="incomeCategory">
+                        Category
+                    </label>
+
+                    <input
+                        type="text"
+                        id="incomeCategory"
+                        name="category"
+                        placeholder="Sponsorship / Contribution"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="incomeExpected">
+                        Expected Amount
+                    </label>
+
+                    <div class="amount-input">
+
+                        <span>₹</span>
+
+                        <input
+                            type="number"
+                            id="incomeExpected"
+                            name="expected"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="incomeReceived">
+                        Received Amount
+                    </label>
+
+                    <div class="amount-input">
+
+                        <span>₹</span>
+
+                        <input
+                            type="number"
+                            id="incomeReceived"
+                            name="received"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="incomePaymentMode">
+                        Payment Mode
+                    </label>
+
+                    <select
+                        id="incomePaymentMode"
+                        name="paymentMode"
+                        required
+                    >
+
+                        <option value="">
+                            Select payment mode
+                        </option>
+
+                        <option value="Cash">
+                            Cash
+                        </option>
+
+                        <option value="UPI">
+                            UPI
+                        </option>
+
+                        <option value="Bank Transfer">
+                            Bank Transfer
+                        </option>
+
+                        <option value="Cheque">
+                            Cheque
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group form-group-full">
+
+                    <label for="incomeNotes">
+                        Notes
+                    </label>
+
+                    <textarea
+                        id="incomeNotes"
+                        name="notes"
+                        rows="4"
+                        placeholder="Additional information..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="incomeFormMessage"
+                class="form-message"
+            ></div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelIncomeButton"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Save Income
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD EXPENSE MODAL
+     ===================================================== -->
+
+<div
+    id="expenseModal"
+    class="modal finance-form-modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-overlay"></div>
+
+    <div class="modal-box form-modal-box">
+
+        <button
+            type="button"
+            class="modal-close"
+            id="closeExpenseModal"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div class="modal-header">
+
+            <span class="section-label">
+                EXPENSE MANAGEMENT
+            </span>
+
+            <h2>
+                Add Expense
+            </h2>
+
+            <p>
+                Enter a new festival expense record.
+            </p>
+
+        </div>
+
+
+        <form
+            id="expenseForm"
+            class="finance-form"
+        >
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="expenseDate">
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="expenseDate"
+                        name="date"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="expenseDescription">
+                        Description
+                    </label>
+
+                    <input
+                        type="text"
+                        id="expenseDescription"
+                        name="description"
+                        placeholder="Food, lighting, pooja items..."
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="expenseCategory">
+                        Category
+                    </label>
+
+                    <input
+                        type="text"
+                        id="expenseCategory"
+                        name="category"
+                        placeholder="Food / Pooja / Lighting"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="expenseAmount">
+                        Amount
+                    </label>
+
+                    <div class="amount-input">
+
+                        <span>₹</span>
+
+                        <input
+                            type="number"
+                            id="expenseAmount"
+                            name="amount"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="expensePaymentMode">
+                        Payment Mode
+                    </label>
+
+                    <select
+                        id="expensePaymentMode"
+                        name="paymentMode"
+                        required
+                    >
+
+                        <option value="">
+                            Select payment mode
+                        </option>
+
+                        <option value="Cash">
+                            Cash
+                        </option>
+
+                        <option value="UPI">
+                            UPI
+                        </option>
+
+                        <option value="Bank Transfer">
+                            Bank Transfer
+                        </option>
+
+                        <option value="Cheque">
+                            Cheque
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group form-group-full">
+
+                    <label for="expenseNotes">
+                        Notes
+                    </label>
+
+                    <textarea
+                        id="expenseNotes"
+                        name="notes"
+                        rows="4"
+                        placeholder="Additional information..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="expenseFormMessage"
+                class="form-message"
+            ></div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelExpenseButton"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Save Expense
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD RENTAL MODAL
+     ===================================================== -->
+
+<div
+    id="rentalModal"
+    class="modal finance-form-modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-overlay"></div>
+
+    <div class="modal-box form-modal-box">
+
+        <button
+            type="button"
+            class="modal-close"
+            id="closeRentalModal"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div class="modal-header">
+
+            <span class="section-label">
+                RENTAL MANAGEMENT
+            </span>
+
+            <h2>
+                Add Rental
+            </h2>
+
+            <p>
+                Enter rented equipment or item details.
+            </p>
+
+        </div>
+
+
+        <form
+            id="rentalForm"
+            class="finance-form"
+        >
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="rentalDate">
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="rentalDate"
+                        name="date"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="rentalDescription">
+                        Description
+                    </label>
+
+                    <input
+                        type="text"
+                        id="rentalDescription"
+                        name="description"
+                        placeholder="Cooking vessels / equipment..."
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="rentalCategory">
+                        Category
+                    </label>
+
+                    <input
+                        type="text"
+                        id="rentalCategory"
+                        name="category"
+                        placeholder="Vessels / Equipment / Other"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="rentalAmount">
+                        Rental Amount
+                    </label>
+
+                    <div class="amount-input">
+
+                        <span>₹</span>
+
+                        <input
+                            type="number"
+                            id="rentalAmount"
+                            name="amount"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="rentalPaid">
+                        Paid Amount
+                    </label>
+
+                    <div class="amount-input">
+
+                        <span>₹</span>
+
+                        <input
+                            type="number"
+                            id="rentalPaid"
+                            name="paid"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group form-group-full">
+
+                    <label for="rentalNotes">
+                        Notes
+                    </label>
+
+                    <textarea
+                        id="rentalNotes"
+                        name="notes"
+                        rows="4"
+                        placeholder="Additional information..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="rentalFormMessage"
+                class="form-message"
+            ></div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelRentalButton"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Save Rental
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD TRANSPORT MODAL
+     ===================================================== -->
+
+<div
+    id="transportModal"
+    class="modal finance-form-modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-overlay"></div>
+
+    <div class="modal-box form-modal-box">
+
+        <button
+            type="button"
+            class="modal-close"
+            id="closeTransportModal"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div class="modal-header">
+
+            <span class="section-label">
+                TRANSPORT MANAGEMENT
+            </span>
+
+            <h2>
+                Add Transport
+            </h2>
+
+            <p>
+                Enter transportation expense details.
+            </p>
+
+        </div>
+
+
+        <form
+            id="transportForm"
+            class="finance-form"
+        >
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="transportDate">
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="transportDate"
+                        name="date"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="transportDescription">
+                        Description
+                    </label>
+
+                    <input
+                        type="text"
+                        id="transportDescription"
+                        name="description"
+                        placeholder="Auto / goods transport / travel..."
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="transportCategory">
+                        Category
+                    </label>
+
+                    <input
+                        type="text"
+                        id="transportCategory"
+                        name="category"
+                        placeholder="Vehicle / Goods / Travel"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="transportAmount">
+                        Transport Amount
+                    </label>
+
+                    <div class="amount-input">
+
+                        <span>₹</span>
+
+                        <input
+                            type="number"
+                            id="transportAmount"
+                            name="amount"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="transportPaid">
+                        Paid Amount
+                    </label>
+
+                    <div class="amount-input">
+
+                        <span>₹</span>
+
+                        <input
+                            type="number"
+                            id="transportPaid"
+                            name="paid"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group form-group-full">
+
+                    <label for="transportNotes">
+                        Notes
+                    </label>
+
+                    <textarea
+                        id="transportNotes"
+                        name="notes"
+                        rows="4"
+                        placeholder="Additional information..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="transportFormMessage"
+                class="form-message"
+            ></div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelTransportButton"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Save Transport
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADMIN LOGIN MODAL
+     ===================================================== -->
+
+<div
+    id="loginModal"
+    class="modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-overlay"></div>
+
+    <div class="modal-box">
+
+        <button
+            type="button"
+            class="modal-close"
+            id="closeLoginModal"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div class="modal-header">
+
+            <span class="section-label">
+                ADMIN ACCESS
+            </span>
+
+            <h2>
+                Administrator Login
+            </h2>
+
+            <p>
+                Login is required to manage finance records.
+            </p>
+
+        </div>
+
+
+        <form id="loginForm">
+
+            <div class="form-group">
+
+                <label for="adminEmail">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="adminEmail"
+                    name="adminEmail"
+                    placeholder="Admin email"
+                    autocomplete="username"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="adminPassword">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="adminPassword"
+                    name="adminPassword"
+                    placeholder="Password"
+                    autocomplete="current-password"
+                    required
+                >
+
+            </div>
+
+
+            <div
+                id="loginMessage"
+                class="form-message"
+            ></div>
+
+
+            <button
+                type="submit"
+                class="primary-button full-button"
+            >
+                Login
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+
+<script src="js/app.js"></script>
+
+
+</body>
+</html>
