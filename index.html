@@ -1,34 +1,40 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+    <meta
+        name="theme-color"
+        content="#170709"
+    >
 
-<meta
-    name="theme-color"
-    content="#170709"
->
+    <title>Dussehra Finance</title>
 
-<title>Dussehra Finance</title>
-
-<link rel="stylesheet" href="css/style.css">
-
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
 
 </head>
 
+
 <body>
+
 
 <!-- =====================================================
      APPLICATION
      ===================================================== -->
 
 <div id="app">
+
 
     <!-- =================================================
          HEADER
@@ -38,6 +44,9 @@
 
         <div class="header-inner">
 
+
+            <!-- BRAND -->
+
             <div class="brand">
 
                 <div class="brand-mark">
@@ -45,11 +54,21 @@
                 </div>
 
                 <div class="brand-text">
-                    <h1>Dussehra Finance</h1>
-                    <p>Festival Finance Management</p>
+
+                    <h1>
+                        Dussehra Finance
+                    </h1>
+
+                    <p>
+                        Festival Finance Management
+                    </p>
+
                 </div>
 
             </div>
+
+
+            <!-- HEADER ACTIONS -->
 
             <div class="header-actions">
 
@@ -83,6 +102,7 @@
 
         <div class="navigation-inner">
 
+
             <button
                 type="button"
                 class="nav-item active"
@@ -90,6 +110,7 @@
             >
                 Dashboard
             </button>
+
 
             <button
                 type="button"
@@ -99,6 +120,25 @@
                 Income
             </button>
 
+
+            <button
+                type="button"
+                class="nav-item"
+                data-page="sponsors"
+            >
+                Sponsors
+            </button>
+
+
+            <button
+                type="button"
+                class="nav-item"
+                data-page="donations"
+            >
+                Donations & Materials
+            </button>
+
+
             <button
                 type="button"
                 class="nav-item"
@@ -106,6 +146,7 @@
             >
                 Expenses
             </button>
+
 
             <button
                 type="button"
@@ -115,6 +156,7 @@
                 Rentals
             </button>
 
+
             <button
                 type="button"
                 class="nav-item"
@@ -122,6 +164,7 @@
             >
                 Transport
             </button>
+
 
             <button
                 type="button"
@@ -152,6 +195,9 @@
             class="page-section active"
         >
 
+
+            <!-- PAGE HEADING -->
+
             <div class="page-heading">
 
                 <div>
@@ -171,6 +217,7 @@
 
                 </div>
 
+
                 <div class="festival-info">
 
                     <span>
@@ -186,9 +233,14 @@
             </div>
 
 
-            <!-- SUMMARY -->
+            <!-- =========================================
+                 SUMMARY
+                 ========================================= -->
 
             <div class="summary-grid">
+
+
+                <!-- TOTAL INCOME -->
 
                 <article class="summary-card income-card">
 
@@ -210,6 +262,8 @@
                 </article>
 
 
+                <!-- RECEIVED INCOME -->
+
                 <article class="summary-card received-card">
 
                     <span class="card-label">
@@ -229,6 +283,8 @@
 
                 </article>
 
+
+                <!-- PENDING INCOME -->
 
                 <article class="summary-card pending-card">
 
@@ -250,6 +306,8 @@
                 </article>
 
 
+                <!-- OUTGOING -->
+
                 <article class="summary-card expense-card">
 
                     <span class="card-label">
@@ -270,6 +328,8 @@
                 </article>
 
 
+                <!-- BALANCE -->
+
                 <article class="summary-card balance-card">
 
                     <span class="card-label">
@@ -289,6 +349,8 @@
 
                 </article>
 
+
+                <!-- BUDGET -->
 
                 <article class="summary-card budget-card">
 
@@ -312,9 +374,14 @@
             </div>
 
 
-            <!-- OUTGOING -->
+            <!-- =========================================
+                 OUTGOING + QUICK ACCESS
+                 ========================================= -->
 
             <div class="dashboard-grid">
+
+
+                <!-- OUTGOING SUMMARY -->
 
                 <div class="dashboard-card">
 
@@ -336,6 +403,7 @@
 
 
                     <div class="breakdown-list">
+
 
                         <div class="breakdown-row">
 
@@ -416,12 +484,16 @@
 
                     <div class="quick-access">
 
+
                         <button
                             type="button"
                             class="quick-button"
                             data-page="income"
                         >
-                            <span>₹</span>
+
+                            <span>
+                                ₹
+                            </span>
 
                             <div>
 
@@ -441,9 +513,62 @@
                         <button
                             type="button"
                             class="quick-button"
+                            data-page="sponsors"
+                        >
+
+                            <span>
+                                ₹
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    Sponsors
+                                </strong>
+
+                                <small>
+                                    View sponsorship records
+                                </small>
+
+                            </div>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="quick-button"
+                            data-page="donations"
+                        >
+
+                            <span>
+                                📦
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    Donations
+                                </strong>
+
+                                <small>
+                                    View donated materials
+                                </small>
+
+                            </div>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="quick-button"
                             data-page="expenses"
                         >
-                            <span>↘</span>
+
+                            <span>
+                                ↘
+                            </span>
 
                             <div>
 
@@ -465,7 +590,10 @@
                             class="quick-button"
                             data-page="rentals"
                         >
-                            <span>▣</span>
+
+                            <span>
+                                ▣
+                            </span>
 
                             <div>
 
@@ -487,7 +615,10 @@
                             class="quick-button"
                             data-page="transport"
                         >
-                            <span>↗</span>
+
+                            <span>
+                                ↗
+                            </span>
 
                             <div>
 
@@ -510,11 +641,178 @@
             </div>
 
 
-            <!-- RECENT TRANSACTIONS -->
+            <!-- =========================================
+                 MATERIAL DONATIONS
+                 ========================================= -->
 
-            <div class="dashboard-card full-width transactions-card">
+            <div
+                class="dashboard-card full-width material-donations-dashboard"
+            >
 
                 <div class="card-heading transactions-heading">
+
+                    <div>
+
+                        <span class="section-label">
+                            IN-KIND SUPPORT
+                        </span>
+
+                        <h3>
+                            Donated Materials
+                        </h3>
+
+                        <p class="transactions-description">
+                            Physical donations are tracked by
+                            quantity only. They do not affect
+                            cash balance or income.
+                        </p>
+
+                    </div>
+
+
+                    <div class="transaction-meta">
+
+                        <span class="transaction-count-label">
+                            DONATIONS
+                        </span>
+
+                        <strong id="materialDonationCount">
+                            0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="summary-grid material-summary-grid"
+                >
+
+
+                    <article class="summary-card">
+
+                        <span class="card-label">
+                            Rice
+                        </span>
+
+                        <strong
+                            id="donationRiceQuantity"
+                            class="card-value"
+                        >
+                            0 Bags
+                        </strong>
+
+                        <small>
+                            Quantity donated
+                        </small>
+
+                    </article>
+
+
+                    <article class="summary-card">
+
+                        <span class="card-label">
+                            Vegetables
+                        </span>
+
+                        <strong
+                            id="donationVegetablesQuantity"
+                            class="card-value"
+                        >
+                            0 Kg
+                        </strong>
+
+                        <small>
+                            Quantity donated
+                        </small>
+
+                    </article>
+
+
+                    <article class="summary-card">
+
+                        <span class="card-label">
+                            Oil
+                        </span>
+
+                        <strong
+                            id="donationOilQuantity"
+                            class="card-value"
+                        >
+                            0 Litres
+                        </strong>
+
+                        <small>
+                            Quantity donated
+                        </small>
+
+                    </article>
+
+
+                    <article class="summary-card">
+
+                        <span class="card-label">
+                            Other Materials
+                        </span>
+
+                        <strong
+                            id="donationOtherQuantity"
+                            class="card-value"
+                        >
+                            0 Items
+                        </strong>
+
+                        <small>
+                            Quantity donated
+                        </small>
+
+                    </article>
+
+                </div>
+
+
+                <div
+                    id="recentMaterialDonations"
+                    class="recent-material-donations"
+                >
+
+                    <div class="transaction-empty-state">
+
+                        <div class="transaction-empty-icon">
+                            📦
+                        </div>
+
+                        <div>
+
+                            <h4>
+                                No material donations yet
+                            </h4>
+
+                            <p>
+                                Donated materials will appear here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================
+                 RECENT TRANSACTIONS
+                 ========================================= -->
+
+            <div
+                class="dashboard-card full-width transactions-card"
+            >
+
+                <div
+                    class="card-heading transactions-heading"
+                >
 
                     <div>
 
@@ -527,7 +825,8 @@
                         </h3>
 
                         <p class="transactions-description">
-                            Latest income and outgoing financial activity.
+                            Latest income and outgoing
+                            financial activity.
                         </p>
 
                     </div>
@@ -566,8 +865,9 @@
                             </h4>
 
                             <p>
-                                Finance transactions will appear here
-                                once income or outgoing records are added.
+                                Finance transactions will appear
+                                here once income or outgoing
+                                records are added.
                             </p>
 
                         </div>
@@ -644,6 +944,183 @@
 
                         <p>
                             Income records will appear here.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================================
+             SPONSORS PAGE
+             ============================================= -->
+
+        <section
+            id="sponsorsPage"
+            class="page-section"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        DUSSEHRA FINANCE
+                    </span>
+
+                    <h2>
+                        Sponsors
+                    </h2>
+
+                    <p>
+                        Track cash sponsorships separately
+                        from general income.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-only primary-button"
+                    id="addSponsorButton"
+                >
+                    + Add Sponsor
+                </button>
+
+            </div>
+
+
+            <div
+                id="sponsorSummary"
+                class="module-summary"
+            >
+                Loading...
+            </div>
+
+
+            <div class="data-card">
+
+                <div
+                    id="sponsorTable"
+                    class="table-container"
+                >
+
+                    <div class="empty-state">
+
+                        <h4>
+                            No sponsor records
+                        </h4>
+
+                        <p>
+                            Cash sponsorship records will appear here.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================================
+             DONATIONS & MATERIALS PAGE
+             ============================================= -->
+
+        <section
+            id="donationsPage"
+            class="page-section"
+        >
+
+            <div class="page-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        IN-KIND SUPPORT
+                    </span>
+
+                    <h2>
+                        Donations & Materials
+                    </h2>
+
+                    <p>
+                        Record physical donations by quantity only.
+                        No monetary value is recorded.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-only primary-button"
+                    id="addDonationButton"
+                >
+                    + Add Donation
+                </button>
+
+            </div>
+
+
+            <div
+                id="donationSummary"
+                class="module-summary"
+            >
+                Loading...
+            </div>
+
+
+            <div
+                class="dashboard-card donation-information-card"
+            >
+
+                <div class="card-heading">
+
+                    <div>
+
+                        <span class="section-label">
+                            QUANTITY ONLY
+                        </span>
+
+                        <h3>
+                            Physical Donation Register
+                        </h3>
+
+                        <p>
+                            Rice, vegetables, oil and other
+                            materials are recorded without
+                            assigning any ₹ value.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="data-card">
+
+                <div
+                    id="donationTable"
+                    class="table-container"
+                >
+
+                    <div class="empty-state">
+
+                        <h4>
+                            No material donations
+                        </h4>
+
+                        <p>
+                            Physical donations will appear here.
                         </p>
 
                     </div>
@@ -957,7 +1434,11 @@
 
             <div>
 
-                © <span id="currentYear">2026</span>
+                ©
+                <span id="currentYear">
+                    2026
+                </span>
+
                 Dussehra Finance
 
             </div>
@@ -981,43 +1462,76 @@
 
     <div class="modal-overlay"></div>
 
-    <div class="modal-box form-modal-box">
+
+    <div
+        class="modal-box form-modal-box income-modal-box"
+    >
+
+
+        <!-- CLOSE -->
 
         <button
             type="button"
             class="modal-close"
             id="closeIncomeModal"
-            aria-label="Close"
+            aria-label="Close Income Form"
         >
             ×
         </button>
 
 
-        <div class="modal-header">
+        <!-- HEADER -->
 
-            <span class="section-label">
-                INCOME MANAGEMENT
-            </span>
+        <div
+            class="modal-header income-modal-header"
+        >
 
-            <h2>
-                Add Income
-            </h2>
+            <div class="income-modal-heading">
 
-            <p>
-                Enter a new festival income record.
-            </p>
+
+                <div class="income-modal-icon">
+                    ₹
+                </div>
+
+
+                <div class="income-modal-title">
+
+                    <span class="section-label">
+                        INCOME MANAGEMENT
+                    </span>
+
+                    <h2>
+                        Add Income
+                    </h2>
+
+                    <p>
+                        Record contributions, sponsorships,
+                        donations and other festival income.
+                    </p>
+
+                </div>
+
+            </div>
 
         </div>
 
 
+        <!-- FORM -->
+
         <form
             id="incomeForm"
-            class="finance-form"
+            class="finance-form income-form"
         >
 
-            <div class="form-grid">
 
-                <div class="form-group">
+            <div class="form-grid income-form-grid">
+
+
+                <!-- DATE -->
+
+                <div
+                    class="form-group income-form-group"
+                >
 
                     <label for="incomeDate">
                         Date
@@ -1033,49 +1547,133 @@
                 </div>
 
 
-                <div class="form-group">
+                <!-- INCOME SOURCE -->
+
+                <div
+                    class="form-group income-form-group"
+                >
+
+                    <label for="incomeSource">
+                        Income Source
+                    </label>
+
+                    <select
+                        id="incomeSource"
+                        name="source"
+                        required
+                    >
+
+                        <option value="">
+                            Select income source
+                        </option>
+
+                        <option value="Family Contribution">
+                            Family Contribution
+                        </option>
+
+                        <option value="Sponsor">
+                            Sponsor
+                        </option>
+
+                        <option value="Donation">
+                            Donation
+                        </option>
+
+                        <option value="Community Contribution">
+                            Community Contribution
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- CONTRIBUTOR -->
+
+                <div
+                    class="form-group income-form-group"
+                >
 
                     <label for="incomeName">
-                        Name / Source
+                        Contributor / Source Name
                     </label>
 
                     <input
                         type="text"
                         id="incomeName"
                         name="name"
-                        placeholder="Sponsor / Contributor name"
+                        placeholder="Person / family / company name"
+                        autocomplete="off"
                         required
                     >
 
                 </div>
 
 
-                <div class="form-group">
+                <!-- CATEGORY -->
+
+                <div
+                    class="form-group income-form-group"
+                >
 
                     <label for="incomeCategory">
-                        Category
+                        Income Category
                     </label>
 
-                    <input
-                        type="text"
+                    <select
                         id="incomeCategory"
                         name="category"
-                        placeholder="Sponsorship / Contribution"
                         required
                     >
+
+                        <option value="">
+                            Select category
+                        </option>
+
+                        <option value="Family Contribution">
+                            Family Contribution
+                        </option>
+
+                        <option value="Sponsorship">
+                            Sponsorship
+                        </option>
+
+                        <option value="Donation">
+                            Donation
+                        </option>
+
+                        <option value="Community Contribution">
+                            Community Contribution
+                        </option>
+
+                        <option value="Other Income">
+                            Other Income
+                        </option>
+
+                    </select>
 
                 </div>
 
 
-                <div class="form-group">
+                <!-- EXPECTED AMOUNT -->
+
+                <div
+                    class="form-group income-form-group"
+                >
 
                     <label for="incomeExpected">
                         Expected Amount
                     </label>
 
-                    <div class="amount-input">
+                    <div class="income-amount-input">
 
-                        <span>₹</span>
+                        <span class="currency-symbol">
+                            ₹
+                        </span>
 
                         <input
                             type="number"
@@ -1092,15 +1690,21 @@
                 </div>
 
 
-                <div class="form-group">
+                <!-- RECEIVED AMOUNT -->
+
+                <div
+                    class="form-group income-form-group"
+                >
 
                     <label for="incomeReceived">
                         Received Amount
                     </label>
 
-                    <div class="amount-input">
+                    <div class="income-amount-input">
 
-                        <span>₹</span>
+                        <span class="currency-symbol">
+                            ₹
+                        </span>
 
                         <input
                             type="number"
@@ -1109,6 +1713,7 @@
                             min="0"
                             step="0.01"
                             placeholder="0.00"
+                            value="0"
                             required
                         >
 
@@ -1117,7 +1722,11 @@
                 </div>
 
 
-                <div class="form-group">
+                <!-- PAYMENT MODE -->
+
+                <div
+                    class="form-group income-form-group"
+                >
 
                     <label for="incomePaymentMode">
                         Payment Mode
@@ -1158,7 +1767,32 @@
                 </div>
 
 
-                <div class="form-group form-group-full">
+                <!-- REFERENCE -->
+
+                <div
+                    class="form-group income-form-group"
+                >
+
+                    <label for="incomeReference">
+                        Reference
+                    </label>
+
+                    <input
+                        type="text"
+                        id="incomeReference"
+                        name="reference"
+                        placeholder="UPI ID / transaction reference"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <!-- NOTES -->
+
+                <div
+                    class="form-group income-form-group income-full-field"
+                >
 
                     <label for="incomeNotes">
                         Notes
@@ -1167,7 +1801,7 @@
                     <textarea
                         id="incomeNotes"
                         name="notes"
-                        rows="4"
+                        rows="3"
                         placeholder="Additional information..."
                     ></textarea>
 
@@ -1176,13 +1810,102 @@
             </div>
 
 
+            <!-- =================================================
+                 INCOME SUMMARY
+                 ================================================= -->
+
+            <div class="income-payment-summary">
+
+
+                <div class="income-summary-item">
+
+                    <span>
+                        Expected
+                    </span>
+
+                    <strong id="incomeExpectedPreview">
+                        ₹0.00
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="income-summary-divider"
+                ></div>
+
+
+                <div class="income-summary-item">
+
+                    <span>
+                        Received
+                    </span>
+
+                    <strong id="incomeReceivedPreview">
+                        ₹0.00
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="income-summary-divider"
+                ></div>
+
+
+                <div
+                    class="income-summary-item pending"
+                >
+
+                    <span>
+                        Pending
+                    </span>
+
+                    <strong id="incomePendingPreview">
+                        ₹0.00
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INFORMATION
+                 ================================================= -->
+
+            <div class="income-form-notice">
+
+                <span class="income-notice-icon">
+                    ℹ
+                </span>
+
+                <span>
+                    Pending amount is automatically calculated
+                    as Expected Amount − Received Amount.
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 FORM MESSAGE
+                 ================================================= -->
+
             <div
                 id="incomeFormMessage"
                 class="form-message"
             ></div>
 
 
-            <div class="form-actions">
+            <!-- =================================================
+                 ACTION BUTTONS
+                 ================================================= -->
+
+            <div
+                class="form-actions income-form-actions"
+            >
+
 
                 <button
                     type="button"
@@ -1192,11 +1915,18 @@
                     Cancel
                 </button>
 
+
                 <button
                     type="submit"
                     class="primary-button"
                 >
+
+                    <span class="income-save-icon">
+                        ＋
+                    </span>
+
                     Save Income
+
                 </button>
 
             </div>
@@ -1221,6 +1951,7 @@
     <div class="modal-overlay"></div>
 
     <div class="modal-box form-modal-box">
+
 
         <button
             type="button"
@@ -1255,6 +1986,7 @@
         >
 
             <div class="form-grid">
+
 
                 <div class="form-group">
 
@@ -1314,7 +2046,9 @@
 
                     <div class="amount-input">
 
-                        <span>₹</span>
+                        <span>
+                            ₹
+                        </span>
 
                         <input
                             type="number"
@@ -1372,7 +2106,9 @@
                 </div>
 
 
-                <div class="form-group form-group-full">
+                <div
+                    class="form-group form-group-full"
+                >
 
                     <label for="expenseNotes">
                         Notes
@@ -1436,6 +2172,7 @@
 
     <div class="modal-box form-modal-box">
 
+
         <button
             type="button"
             class="modal-close"
@@ -1469,6 +2206,7 @@
         >
 
             <div class="form-grid">
+
 
                 <div class="form-group">
 
@@ -1528,7 +2266,9 @@
 
                     <div class="amount-input">
 
-                        <span>₹</span>
+                        <span>
+                            ₹
+                        </span>
 
                         <input
                             type="number"
@@ -1553,7 +2293,9 @@
 
                     <div class="amount-input">
 
-                        <span>₹</span>
+                        <span>
+                            ₹
+                        </span>
 
                         <input
                             type="number"
@@ -1570,7 +2312,9 @@
                 </div>
 
 
-                <div class="form-group form-group-full">
+                <div
+                    class="form-group form-group-full"
+                >
 
                     <label for="rentalNotes">
                         Notes
@@ -1634,6 +2378,7 @@
 
     <div class="modal-box form-modal-box">
 
+
         <button
             type="button"
             class="modal-close"
@@ -1667,6 +2412,7 @@
         >
 
             <div class="form-grid">
+
 
                 <div class="form-group">
 
@@ -1726,7 +2472,9 @@
 
                     <div class="amount-input">
 
-                        <span>₹</span>
+                        <span>
+                            ₹
+                        </span>
 
                         <input
                             type="number"
@@ -1751,7 +2499,9 @@
 
                     <div class="amount-input">
 
-                        <span>₹</span>
+                        <span>
+                            ₹
+                        </span>
 
                         <input
                             type="number"
@@ -1768,7 +2518,9 @@
                 </div>
 
 
-                <div class="form-group form-group-full">
+                <div
+                    class="form-group form-group-full"
+                >
 
                     <label for="transportNotes">
                         Notes
@@ -1832,6 +2584,7 @@
 
     <div class="modal-box">
 
+
         <button
             type="button"
             class="modal-close"
@@ -1860,6 +2613,7 @@
 
 
         <form id="loginForm">
+
 
             <div class="form-group">
 
@@ -1921,8 +2675,9 @@
      JAVASCRIPT
      ===================================================== -->
 
-<script src="js/App.js"></script>
+<script src="js/app.js"></script>
 
 
 </body>
+
 </html>
