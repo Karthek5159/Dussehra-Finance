@@ -8940,38 +8940,33 @@ function initializeVisibilityRefresh() {
     );
 
 }
-
-
 /* =========================================================
-   73. INITIALIZE APP
+   84. APPLICATION INITIALIZATION — UPDATED
    ========================================================= */
 
 async function initializeApp() {
-
     initializeNavigation();
-
     initializeLogin();
-
     initializeQuickAccess();
-
     initializeAddButtons();
-
     initializeGlobalEscape();
-
     initializeVisibilityRefresh();
+
+    initializeReportActions();
 
     restoreAdminSession();
 
-    navigateTo(
-        "dashboard"
-    );
+    navigateTo("dashboard");
 
     await loadAllData();
 
     initializeAutoRefresh();
-
 }
 
+document.addEventListener(
+    "DOMContentLoaded",
+    initializeApp
+);
 
 /* =========================================================
    74. DOM READY
@@ -8981,3 +8976,822 @@ document.addEventListener(
     "DOMContentLoaded",
     initializeApp
 );
+
+/* =========================================================
+   75. REPORTS HELPERS
+   ========================================================= */
+
+function reportElement(id) {
+    return document.getElementById(id);
+}
+
+function reportSetText(id, value) {
+    const element = reportElement(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+function reportCategoryName(item) {
+    return String(
+        firstValue(
+            item,
+            [
+                "Category",
+                "category",
+                "Type",
+                "type"
+            ],
+            "Other"
+        )
+    ).trim() || "Other";
+}
+
+function reportExpectedIncome(item) {
+    return numberValue(
+        firstValue(
+            item,
+            [
+                "Expected",
+                "expected",
+                "ExpectedAmount",
+                "expectedAmount",
+                "Amount",
+                "amount"
+            ],
+            0
+        )
+    );
+}
+
+function reportReceivedIncome(item) {
+    return numberValue(
+        firstValue(
+            item,
+            [
+                "Received",
+                "received",
+                "ReceivedAmount",
+                "receivedAmount"
+            ],
+            0
+        )
+    );
+}
+
+function reportRentalPaid(item) {
+    return numberValue(
+        firstValue(
+            item,
+            [
+                "Paid",
+                "paid",
+                "ActualPaid",
+                "actualPaid"
+            ],
+            0
+        )
+    );
+}
+
+function reportTransportPaid(item) {
+    return numberValue(
+        firstValue(
+            item,
+            [
+                "Paid",
+                "paid",
+                "ActualPaid",
+                "actualPaid"
+            ],
+            0
+        )
+    );
+}
+
+function reportDateKey(value) {
+    if (!value) {
+        return "";
+    }
+
+    const text = String(value).trim();
+
+    if (!text) {
+        return "";
+    }
+
+    /*
+       Prefer the date portion of ISO-style values.
+       This avoids timezone shifting when comparing
+       festival dates.
+    */
+    const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (isoMatch) {
+        return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    }
+
+    const date = new Date(text);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function reportDateValue(item) {
+    return firstValue(
+        item,
+        [
+            "Date",
+            "date",
+            "TransactionDate",
+            "transactionDate",
+            "ExpenseDate",
+            "expenseDate",
+            "RentalDate",
+            "rentalDate",
+            "TransportDate",
+            "transportDate",
+            "CreatedAt",
+            "createdAt"
+        ],
+        ""
+    );
+}
+
+function reportFestivalStartDate() {
+    const festival = App.data.festival || {};
+
+    const possibleStartDates = [
+        festival.StartDate,
+        festival.startDate,
+        festival.FestivalStartDate,
+        festival.festivalStartDate,
+        festival.FromDate,
+        festival.fromDate,
+        festival.Start,
+        festival.start
+    ];
+
+    for (const value of possibleStartDates) {
+        const key = reportDateKey(value);
+
+        if (key) {
+            return key;
+        }
+    }
+
+    /*
+       If the API does not provide a festival start date,
+       use the earliest outgoing transaction date.
+    */
+    const dates = [];
+
+    [
+        ...(App.data.expenses || []),
+        ...(App.data.rentals || []),
+        ...(App.data.transport || [])
+    ].forEach(item => {
+        const key = reportDateKey(reportDateValue(item));
+
+        if (key) {
+            dates.push(key);
+        }
+    });
+
+    if (dates.length) {
+        dates.sort();
+        return dates[0];
+    }
+
+    return "";
+}
+
+function reportAddDays(dateKey, days) {
+    if (!dateKey) {
+        return "";
+    }
+
+    const parts = dateKey.split("-").map(Number);
+
+    if (parts.length !== 3) {
+        return "";
+    }
+
+    const date = new Date(
+        parts[0],
+        parts[1] - 1,
+        parts[2]
+    );
+
+    date.setDate(date.getDate() + days);
+
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+    ].join("-");
+}
+
+function reportFormatDayDate(dateKey) {
+    if (!dateKey) {
+        return "";
+    }
+
+    const parts = dateKey.split("-").map(Number);
+
+    if (parts.length !== 3) {
+        return "";
+    }
+
+    return `${String(parts[2]).padStart(2, "0")}-${String(parts[1]).padStart(2, "0")}-${parts[0]}`;
+}
+
+/* =========================================================
+   76. REPORTS SUMMARY
+   ========================================================= */
+
+function renderReportsSummary() {
+    const summary = calculateSummary();
+
+    reportSetText(
+        "reportTotalExpectedIncome",
+        formatCurrency(summary.totalIncome)
+    );
+
+    reportSetText(
+        "reportTotalReceivedIncome",
+        formatCurrency(summary.receivedIncome)
+    );
+
+    reportSetText(
+        "reportPendingIncome",
+        formatCurrency(summary.pendingIncome)
+    );
+
+    reportSetText(
+        "reportTotalOutgoing",
+        formatCurrency(summary.totalOutgoing)
+    );
+
+    reportSetText(
+        "reportCashBalance",
+        formatCurrency(summary.cashBalance)
+    );
+
+    reportSetText(
+        "reportTotalBudget",
+        formatCurrency(summary.totalBudget)
+    );
+
+    reportSetText(
+        "reportReceivedIncomeStatus",
+        formatCurrency(summary.receivedIncome)
+    );
+
+    reportSetText(
+        "reportPendingIncomeStatus",
+        formatCurrency(summary.pendingIncome)
+    );
+
+    reportSetText(
+        "reportExpectedIncomeStatus",
+        formatCurrency(summary.totalIncome)
+    );
+
+    reportSetText(
+        "reportExpensesTotal",
+        formatCurrency(summary.expenseTotal)
+    );
+
+    reportSetText(
+        "reportRentalsTotal",
+        formatCurrency(summary.rentalPaid)
+    );
+
+    reportSetText(
+        "reportTransportTotal",
+        formatCurrency(summary.transportPaid)
+    );
+
+    reportSetText(
+        "reportOutgoingTotal",
+        formatCurrency(summary.totalOutgoing)
+    );
+
+    reportSetText(
+        "reportBudgetPosition",
+        formatCurrency(summary.totalBudget)
+    );
+
+    reportSetText(
+        "reportSpentPosition",
+        formatCurrency(summary.totalOutgoing)
+    );
+
+    const budgetRemaining =
+        summary.totalBudget - summary.totalOutgoing;
+
+    reportSetText(
+        "reportBudgetRemaining",
+        formatCurrency(budgetRemaining)
+    );
+}
+
+
+/* =========================================================
+   77. REPORTS — INCOME ANALYSIS
+   ========================================================= */
+
+function renderReportIncomeCategories() {
+    const container = reportElement(
+        "reportIncomeCategories"
+    );
+
+    if (!container) {
+        return;
+    }
+
+    const categories = {};
+
+    (App.data.income || []).forEach(item => {
+        const category = reportCategoryName(item);
+
+        if (!categories[category]) {
+            categories[category] = {
+                expected: 0,
+                received: 0
+            };
+        }
+
+        categories[category].expected +=
+            reportExpectedIncome(item);
+
+        categories[category].received +=
+            reportReceivedIncome(item);
+    });
+
+    const entries = Object.entries(categories);
+
+    if (!entries.length) {
+        container.innerHTML = `
+            <div class="report-empty">
+                No income data available.
+            </div>
+        `;
+
+        return;
+    }
+
+    entries.sort(
+        (a, b) =>
+            b[1].received - a[1].received
+    );
+
+    container.innerHTML = entries
+        .map(([category, values]) => {
+            const pending = Math.max(
+                values.expected - values.received,
+                0
+            );
+
+            return `
+                <div class="report-category-row">
+                    <div>
+                        <span>${escapeHtml(category)}</span>
+                        <small>
+                            Expected ${formatCurrency(values.expected)}
+                        </small>
+                    </div>
+
+                    <div>
+                        <strong>
+                            ${formatCurrency(values.received)}
+                        </strong>
+                        <small>
+                            Pending ${formatCurrency(pending)}
+                        </small>
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+}
+
+
+/* =========================================================
+   78. REPORTS — OUTGOING CATEGORY ANALYSIS
+   ========================================================= */
+
+function aggregateReportCategories(items, amountResolver) {
+    const categories = {};
+
+    (items || []).forEach(item => {
+        const category = reportCategoryName(item);
+        const amount = numberValue(
+            amountResolver(item)
+        );
+
+        if (!categories[category]) {
+            categories[category] = 0;
+        }
+
+        categories[category] += amount;
+    });
+
+    return Object.entries(categories)
+        .sort((a, b) => b[1] - a[1]);
+}
+
+function renderReportOutgoingCategories(
+    containerId,
+    items,
+    amountResolver,
+    emptyMessage
+) {
+    const container = reportElement(containerId);
+
+    if (!container) {
+        return;
+    }
+
+    const entries = aggregateReportCategories(
+        items,
+        amountResolver
+    );
+
+    if (!entries.length) {
+        container.innerHTML = `
+            <div class="report-empty">
+                ${escapeHtml(emptyMessage)}
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = entries
+        .map(([category, amount]) => `
+            <div class="report-category-row">
+                <div>
+                    <span>
+                        ${escapeHtml(category)}
+                    </span>
+                </div>
+
+                <strong>
+                    ${formatCurrency(amount)}
+                </strong>
+            </div>
+        `)
+        .join("");
+}
+
+function renderReportExpenseCategories() {
+    renderReportOutgoingCategories(
+        "reportExpenseCategories",
+        App.data.expenses,
+        item => recordAmount(item),
+        "No expense data available."
+    );
+}
+
+function renderReportRentalCategories() {
+    renderReportOutgoingCategories(
+        "reportRentalCategories",
+        App.data.rentals,
+        item => reportRentalPaid(item),
+        "No rental data available."
+    );
+}
+
+function renderReportTransportCategories() {
+    renderReportOutgoingCategories(
+        "reportTransportCategories",
+        App.data.transport,
+        item => reportTransportPaid(item),
+        "No transport data available."
+    );
+}
+
+
+/* =========================================================
+   79. REPORTS — 10-DAY EXPENSE TREND
+   ========================================================= */
+
+function renderReportExpenseTrend() {
+    const container = reportElement(
+        "reportExpenseTrend"
+    );
+
+    if (!container) {
+        return;
+    }
+
+    const startDate = reportFestivalStartDate();
+
+    if (!startDate) {
+        container.innerHTML = `
+            <div class="report-empty">
+                Festival dates are not available.
+            </div>
+        `;
+
+        return;
+    }
+
+    const dailyTotals = [];
+
+    for (let day = 0; day < 10; day++) {
+        const dateKey = reportAddDays(
+            startDate,
+            day
+        );
+
+        let total = 0;
+
+        (App.data.expenses || []).forEach(item => {
+            if (
+                reportDateKey(
+                    reportDateValue(item)
+                ) === dateKey
+            ) {
+                total += recordAmount(item);
+            }
+        });
+
+        (App.data.rentals || []).forEach(item => {
+            if (
+                reportDateKey(
+                    reportDateValue(item)
+                ) === dateKey
+            ) {
+                total += reportRentalPaid(item);
+            }
+        });
+
+        (App.data.transport || []).forEach(item => {
+            if (
+                reportDateKey(
+                    reportDateValue(item)
+                ) === dateKey
+            ) {
+                total += reportTransportPaid(item);
+            }
+        });
+
+        dailyTotals.push({
+            day: day + 1,
+            date: dateKey,
+            total
+        });
+    }
+
+    const maximum = Math.max(
+        ...dailyTotals.map(item => item.total),
+        0
+    );
+
+    container.innerHTML = dailyTotals
+        .map(item => {
+            const percentage =
+                maximum > 0
+                    ? (item.total / maximum) * 100
+                    : 0;
+
+            return `
+                <div class="report-trend-row">
+
+                    <div class="report-trend-day">
+                        <strong>
+                            Day ${item.day}
+                        </strong>
+
+                        <small>
+                            ${reportFormatDayDate(item.date)}
+                        </small>
+                    </div>
+
+                    <div class="report-trend-bar">
+                        <div
+                            class="report-trend-fill"
+                            style="width:${percentage.toFixed(2)}%"
+                        ></div>
+                    </div>
+
+                    <div class="report-trend-amount">
+                        ${formatCurrency(item.total)}
+                    </div>
+
+                </div>
+            `;
+        })
+        .join("");
+}
+
+
+/* =========================================================
+   80. REPORTS — MATERIAL DONATIONS
+   ========================================================= */
+
+function reportMaterialName(item) {
+    return String(
+        firstValue(
+            item,
+            [
+                "Description",
+                "description",
+                "Item",
+                "item",
+                "Material",
+                "material",
+                "Name",
+                "name"
+            ],
+            ""
+        )
+    ).trim().toLowerCase();
+}
+
+function reportMaterialQuantity(item) {
+    return numberValue(
+        firstValue(
+            item,
+            [
+                "Quantity",
+                "quantity",
+                "Qty",
+                "qty"
+            ],
+            0
+        )
+    );
+}
+
+function renderReportMaterialDonations() {
+    let rice = 0;
+    let vegetables = 0;
+    let oil = 0;
+    let other = 0;
+
+    (App.data.donations || []).forEach(item => {
+        if (!isMaterialDonation(item)) {
+            return;
+        }
+
+        const name = reportMaterialName(item);
+        const quantity = reportMaterialQuantity(item);
+
+        if (quantity <= 0) {
+            return;
+        }
+
+        if (
+            name.includes("rice")
+        ) {
+            rice += quantity;
+        }
+        else if (
+            name.includes("vegetable") ||
+            name.includes("veggie")
+        ) {
+            vegetables += quantity;
+        }
+        else if (
+            name.includes("oil")
+        ) {
+            oil += quantity;
+        }
+        else {
+            other += quantity;
+        }
+    });
+
+    reportSetText(
+        "reportRiceQuantity",
+        formatNumber(rice)
+    );
+
+    reportSetText(
+        "reportVegetablesQuantity",
+        formatNumber(vegetables)
+    );
+
+    reportSetText(
+        "reportOilQuantity",
+        formatNumber(oil)
+    );
+
+    reportSetText(
+        "reportOtherQuantity",
+        formatNumber(other)
+    );
+}
+
+
+/* =========================================================
+   81. REPORTS — MAIN RENDERER
+   ========================================================= */
+
+function renderReports() {
+    renderReportsSummary();
+
+    renderReportIncomeCategories();
+
+    renderReportExpenseCategories();
+    renderReportRentalCategories();
+    renderReportTransportCategories();
+
+    renderReportExpenseTrend();
+
+    renderReportMaterialDonations();
+}
+
+
+/* =========================================================
+   82. REPORTS — PRINT
+   ========================================================= */
+
+function initializeReportActions() {
+    const button = reportElement(
+        "printReportButton"
+    );
+
+    if (!button || button.dataset.initialized === "true") {
+        return;
+    }
+
+    button.addEventListener(
+        "click",
+        () => {
+            renderReports();
+            window.print();
+        }
+    );
+
+    button.dataset.initialized = "true";
+}
+
+function renderApplication() {
+    clearApplicationError();
+    renderDashboard();
+    renderIncomeSummary();
+    renderIncomeTable();
+    renderExpenseSummary();
+    renderExpenseTable();
+    renderRentalSummary();
+    renderRentalTable();
+    renderTransportSummary();
+    renderTransportTable();
+    renderSponsorSummary();
+    renderSponsorTable();
+    renderDonationSummary();
+    renderDonationTable();
+    renderRecentTransactions();
+    updateAdminInterface();
+}
+
+/* =========================================================
+   83. APPLICATION RENDERER — UPDATED
+   ========================================================= */
+
+function renderApplication() {
+    clearApplicationError();
+
+    renderDashboard();
+
+    renderIncomeSummary();
+    renderIncomeTable();
+
+    renderExpenseSummary();
+    renderExpenseTable();
+
+    renderRentalSummary();
+    renderRentalTable();
+
+    renderTransportSummary();
+    renderTransportTable();
+
+    renderSponsorSummary();
+    renderSponsorTable();
+
+    renderDonationSummary();
+    renderDonationTable();
+
+    renderRecentTransactions();
+
+    /*
+       Reports use the same App.data already loaded by
+       loadAllData(), so no additional API request is required.
+    */
+    renderReports();
+
+    updateAdminInterface();
+}
