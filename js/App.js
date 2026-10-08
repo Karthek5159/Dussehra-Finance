@@ -1,6 +1,7 @@
 /* =========================================================
    DUSSEHRA FINANCE — APPLICATION JAVASCRIPT
    Google Apps Script Backend
+   Version: Enhanced 2026
    ========================================================= */
 
 "use strict";
@@ -15,7 +16,11 @@ const CONFIG = {
     API_URL:
         "https://script.google.com/macros/s/AKfycbxXHyO95LALy-jEUe-hUlgV1VOOhfOHCLIwWzW2yqsZT8N_XOjFqIC0fMYi4b5tLCgh/exec",
 
-    REFRESH_INTERVAL: 60000
+    REFRESH_INTERVAL: 60000,
+
+    MAX_RECENT_ITEMS: 10,
+
+    MAX_TABLE_ITEMS: 500
 
 };
 
@@ -36,6 +41,10 @@ const App = {
 
     formType: null,
 
+    editingId: null,
+
+    refreshTimer: null,
+
     data: {
 
         festival: {
@@ -44,10 +53,18 @@ const App = {
         },
 
         income: [],
+
         expenses: [],
+
         rentals: [],
+
         transport: [],
-        budget: []
+
+        budget: [],
+
+        sponsors: [],
+
+        donations: []
 
     }
 
@@ -74,7 +91,21 @@ function $$(selector) {
 
 function numberValue(value) {
 
-    const number = Number(value);
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return 0;
+    }
+
+    const number =
+        Number(
+            String(value)
+                .replace(/,/g, "")
+                .replace(/₹/g, "")
+                .trim()
+        );
 
     return Number.isFinite(number)
         ? number
@@ -83,19 +114,58 @@ function numberValue(value) {
 }
 
 
+function firstValue(item, keys, fallback = "") {
+
+    if (!item) {
+        return fallback;
+    }
+
+    for (const key of keys) {
+
+        if (
+            item[key] !== undefined &&
+            item[key] !== null &&
+            item[key] !== ""
+        ) {
+
+            return item[key];
+
+        }
+
+    }
+
+    return fallback;
+
+}
+
+
 function formatCurrency(value) {
 
-    return new Intl.NumberFormat("en-IN", {
+    return new Intl.NumberFormat(
+        "en-IN",
+        {
+            style: "currency",
+            currency: "INR",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    ).format(
+        numberValue(value)
+    );
 
-        style: "currency",
+}
 
-        currency: "INR",
 
-        minimumFractionDigits: 2,
+function formatNumber(value) {
 
-        maximumFractionDigits: 2
-
-    }).format(numberValue(value));
+    return new Intl.NumberFormat(
+        "en-IN",
+        {
+            maximumFractionDigits: 2
+        }
+    ).format(
+        numberValue(value)
+    );
 
 }
 
@@ -119,10 +189,17 @@ function formatDate(value) {
         return "-";
     }
 
-    const date = new Date(value);
+    const date =
+        new Date(value);
 
-    if (Number.isNaN(date.getTime())) {
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
         return escapeHtml(value);
+
     }
 
     return new Intl.DateTimeFormat(
@@ -139,7 +216,8 @@ function formatDate(value) {
 
 function todayForInput() {
 
-    const date = new Date();
+    const date =
+        new Date();
 
     const year =
         date.getFullYear();
@@ -155,6 +233,107 @@ function todayForInput() {
         ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
+
+}
+
+
+function normalizeDateForInput(value) {
+
+    if (!value) {
+        return todayForInput();
+    }
+
+    if (
+        /^\d{4}-\d{2}-\d{2}$/.test(
+            String(value)
+        )
+    ) {
+
+        return String(value);
+
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return todayForInput();
+
+    }
+
+    return [
+
+        date.getFullYear(),
+
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0"),
+
+        String(
+            date.getDate()
+        ).padStart(2, "0")
+
+    ].join("-");
+
+}
+
+
+function recordId(item) {
+
+    return String(
+        firstValue(
+            item,
+            [
+                "ID",
+                "Id",
+                "id",
+                "RecordID",
+                "recordId"
+            ],
+            ""
+        )
+    );
+
+}
+
+
+function recordDate(item) {
+
+    return firstValue(
+        item,
+        [
+            "Date",
+            "date",
+            "DonationDate",
+            "donationDate"
+        ],
+        ""
+    );
+
+}
+
+
+function recordAmount(item) {
+
+    return numberValue(
+        firstValue(
+            item,
+            [
+                "Amount",
+                "amount",
+                "Total",
+                "total",
+                "ActualPaid",
+                "actualPaid"
+            ],
+            0
+        )
+    );
 
 }
 
@@ -217,10 +396,19 @@ function setConnectionStatus(
 
 async function apiGet(action) {
 
+    if (!CONFIG.API_URL) {
+
+        throw new Error(
+            "API URL is not configured."
+        );
+
+    }
+
     const url =
         CONFIG.API_URL +
         "?action=" +
         encodeURIComponent(action);
+
 
     const response =
         await fetch(
@@ -231,6 +419,7 @@ async function apiGet(action) {
             }
         );
 
+
     if (!response.ok) {
 
         throw new Error(
@@ -239,8 +428,10 @@ async function apiGet(action) {
 
     }
 
+
     const data =
         await response.json();
+
 
     if (
         !data ||
@@ -254,6 +445,7 @@ async function apiGet(action) {
 
     }
 
+
     return data;
 
 }
@@ -265,6 +457,15 @@ async function apiGet(action) {
 
 async function apiPost(payload) {
 
+    if (!CONFIG.API_URL) {
+
+        throw new Error(
+            "API URL is not configured."
+        );
+
+    }
+
+
     const response =
         await fetch(
             CONFIG.API_URL,
@@ -273,8 +474,10 @@ async function apiPost(payload) {
                 method: "POST",
 
                 headers: {
+
                     "Content-Type":
                         "text/plain;charset=utf-8"
+
                 },
 
                 body:
@@ -321,14 +524,21 @@ async function apiPost(payload) {
 
 async function loadAllData() {
 
+    if (App.loading) {
+        return false;
+    }
+
+
     setConnectionStatus(
-        "Connecting...",
+        "Syncing...",
         "loading"
     );
+
 
     try {
 
         App.loading = true;
+
 
         const result =
             await apiGet("all");
@@ -369,6 +579,24 @@ async function loadAllData() {
         App.data.budget =
             Array.isArray(result.budget)
                 ? result.budget
+                : [];
+
+
+        /*
+           New modules.
+           If the backend has not yet added these
+           arrays, the application simply uses [].
+        */
+
+        App.data.sponsors =
+            Array.isArray(result.sponsors)
+                ? result.sponsors
+                : [];
+
+
+        App.data.donations =
+            Array.isArray(result.donations)
+                ? result.donations
                 : [];
 
 
@@ -437,9 +665,18 @@ async function loadDashboard() {
         }
 
 
+        /*
+           Keep dashboard API support,
+           but also refresh new module values
+           from local data when available.
+        */
+
         renderDashboardFromApi(
             result
         );
+
+
+        renderDashboardExtra();
 
 
         setConnectionStatus(
@@ -461,11 +698,13 @@ async function loadDashboard() {
         );
 
 
-        setConnectionStatus(
-            "Connection Error",
-            "offline"
-        );
+        /*
+           Dashboard endpoint may not yet expose
+           the new modules. Local rendering remains
+           available.
+        */
 
+        renderDashboard();
 
         return false;
 
@@ -525,6 +764,18 @@ function showApplicationError(message) {
 }
 
 
+function clearApplicationError() {
+
+    const element =
+        $("#applicationError");
+
+    if (element) {
+        element.remove();
+    }
+
+}
+
+
 /* =========================================================
    11. SUMMARY CALCULATION
    ========================================================= */
@@ -536,10 +787,18 @@ function calculateSummary() {
             (total, item) =>
                 total +
                 numberValue(
-                    item.Expected ??
-                    item.expected ??
-                    item.Amount ??
-                    item.amount
+                    firstValue(
+                        item,
+                        [
+                            "Expected",
+                            "expected",
+                            "ExpectedAmount",
+                            "expectedAmount",
+                            "Amount",
+                            "amount"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -550,8 +809,16 @@ function calculateSummary() {
             (total, item) =>
                 total +
                 numberValue(
-                    item.Received ??
-                    item.received
+                    firstValue(
+                        item,
+                        [
+                            "Received",
+                            "received",
+                            "ReceivedAmount",
+                            "receivedAmount"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -569,10 +836,7 @@ function calculateSummary() {
         App.data.expenses.reduce(
             (total, item) =>
                 total +
-                numberValue(
-                    item.Amount ??
-                    item.amount
-                ),
+                recordAmount(item),
             0
         );
 
@@ -582,8 +846,16 @@ function calculateSummary() {
             (total, item) =>
                 total +
                 numberValue(
-                    item.Amount ??
-                    item.amount
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "ExpectedRent",
+                            "expectedRent"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -594,8 +866,16 @@ function calculateSummary() {
             (total, item) =>
                 total +
                 numberValue(
-                    item.Paid ??
-                    item.paid
+                    firstValue(
+                        item,
+                        [
+                            "Paid",
+                            "paid",
+                            "ActualPaid",
+                            "actualPaid"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -606,8 +886,16 @@ function calculateSummary() {
             (total, item) =>
                 total +
                 numberValue(
-                    item.Amount ??
-                    item.amount
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "Total",
+                            "total"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -618,8 +906,16 @@ function calculateSummary() {
             (total, item) =>
                 total +
                 numberValue(
-                    item.Paid ??
-                    item.paid
+                    firstValue(
+                        item,
+                        [
+                            "Paid",
+                            "paid",
+                            "ActualPaid",
+                            "actualPaid"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -641,9 +937,110 @@ function calculateSummary() {
             (total, item) =>
                 total +
                 numberValue(
-                    item.Amount ??
-                    item.amount
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "Budget",
+                            "budget"
+                        ],
+                        0
+                    )
                 ),
+            0
+        );
+
+
+    const sponsorExpected =
+        App.data.sponsors.reduce(
+            (total, item) =>
+                total +
+                numberValue(
+                    firstValue(
+                        item,
+                        [
+                            "Expected",
+                            "expected",
+                            "ExpectedAmount",
+                            "expectedAmount",
+                            "Amount",
+                            "amount"
+                        ],
+                        0
+                    )
+                ),
+            0
+        );
+
+
+    const sponsorReceived =
+        App.data.sponsors.reduce(
+            (total, item) =>
+                total +
+                numberValue(
+                    firstValue(
+                        item,
+                        [
+                            "Received",
+                            "received",
+                            "ReceivedAmount",
+                            "receivedAmount",
+                            "Paid",
+                            "paid"
+                        ],
+                        0
+                    )
+                ),
+            0
+        );
+
+
+    const sponsorPending =
+        Math.max(
+            sponsorExpected -
+            sponsorReceived,
+            0
+        );
+
+
+    /*
+       Material donations are intentionally
+       NOT included in cash income.
+    */
+
+    const materialDonationCount =
+        App.data.donations.filter(
+            item =>
+                isMaterialDonation(item)
+        ).length;
+
+
+    const materialQuantity =
+        App.data.donations.reduce(
+            (total, item) => {
+
+                if (
+                    !isMaterialDonation(item)
+                ) {
+                    return total;
+                }
+
+                return total +
+                    numberValue(
+                        firstValue(
+                            item,
+                            [
+                                "Quantity",
+                                "quantity",
+                                "Qty",
+                                "qty"
+                            ],
+                            0
+                        )
+                    );
+
+            },
             0
         );
 
@@ -670,7 +1067,23 @@ function calculateSummary() {
 
         cashBalance,
 
-        totalBudget
+        totalBudget,
+
+        sponsorExpected,
+
+        sponsorReceived,
+
+        sponsorPending,
+
+        sponsorCount:
+            App.data.sponsors.length,
+
+        donationCount:
+            App.data.donations.length,
+
+        materialDonationCount,
+
+        materialQuantity
 
     };
 
@@ -690,6 +1103,7 @@ function renderDashboardFromApi(result) {
     setText(
         "#festivalName",
         result.festival?.name ||
+        App.data.festival?.name ||
         "Dussehra Finance 2026"
     );
 
@@ -697,7 +1111,14 @@ function renderDashboardFromApi(result) {
     setText(
         "#totalIncome",
         formatCurrency(
-            summary.totalIncome || 0
+            firstValue(
+                summary,
+                [
+                    "totalIncome",
+                    "totalExpectedIncome"
+                ],
+                calculateSummary().totalIncome
+            )
         )
     );
 
@@ -705,7 +1126,14 @@ function renderDashboardFromApi(result) {
     setText(
         "#receivedIncome",
         formatCurrency(
-            summary.receivedIncome || 0
+            firstValue(
+                summary,
+                [
+                    "receivedIncome",
+                    "totalReceivedIncome"
+                ],
+                calculateSummary().receivedIncome
+            )
         )
     );
 
@@ -713,7 +1141,14 @@ function renderDashboardFromApi(result) {
     setText(
         "#pendingIncome",
         formatCurrency(
-            summary.pendingIncome || 0
+            firstValue(
+                summary,
+                [
+                    "pendingIncome",
+                    "totalPendingIncome"
+                ],
+                calculateSummary().pendingIncome
+            )
         )
     );
 
@@ -721,7 +1156,14 @@ function renderDashboardFromApi(result) {
     setText(
         "#totalOutgoing",
         formatCurrency(
-            summary.totalOutgoing || 0
+            firstValue(
+                summary,
+                [
+                    "totalOutgoing",
+                    "totalActualExpenses"
+                ],
+                calculateSummary().totalOutgoing
+            )
         )
     );
 
@@ -729,7 +1171,14 @@ function renderDashboardFromApi(result) {
     setText(
         "#cashBalance",
         formatCurrency(
-            summary.cashBalance || 0
+            firstValue(
+                summary,
+                [
+                    "cashBalance",
+                    "balance"
+                ],
+                calculateSummary().cashBalance
+            )
         )
     );
 
@@ -737,15 +1186,33 @@ function renderDashboardFromApi(result) {
     setText(
         "#totalBudget",
         formatCurrency(
-            summary.totalBudget || 0
+            firstValue(
+                summary,
+                [
+                    "totalBudget",
+                    "budget"
+                ],
+                calculateSummary().totalBudget
+            )
         )
     );
+
+
+    const local =
+        calculateSummary();
 
 
     setText(
         "#expenseTotal",
         formatCurrency(
-            summary.expenseTotal || 0
+            firstValue(
+                summary,
+                [
+                    "expenseTotal",
+                    "totalExpenses"
+                ],
+                local.expenseTotal
+            )
         )
     );
 
@@ -753,7 +1220,15 @@ function renderDashboardFromApi(result) {
     setText(
         "#rentalTotal",
         formatCurrency(
-            summary.rentalPaid || 0
+            firstValue(
+                summary,
+                [
+                    "rentalPaid",
+                    "totalRentalPaid",
+                    "rentalTotal"
+                ],
+                local.rentalPaid
+            )
         )
     );
 
@@ -761,7 +1236,15 @@ function renderDashboardFromApi(result) {
     setText(
         "#transportTotal",
         formatCurrency(
-            summary.transportPaid || 0
+            firstValue(
+                summary,
+                [
+                    "transportPaid",
+                    "totalTransportPaid",
+                    "transportTotal"
+                ],
+                local.transportPaid
+            )
         )
     );
 
@@ -769,9 +1252,19 @@ function renderDashboardFromApi(result) {
     setText(
         "#breakdownOutgoing",
         formatCurrency(
-            summary.totalOutgoing || 0
+            firstValue(
+                summary,
+                [
+                    "totalOutgoing",
+                    "totalActualExpenses"
+                ],
+                local.totalOutgoing
+            )
         )
     );
+
+
+    renderDashboardExtra();
 
 }
 
@@ -810,7 +1303,8 @@ function renderDashboard() {
 
     setText(
         "#festivalName",
-        App.data.festival.name
+        App.data.festival?.name ||
+        "Dussehra Finance 2026"
     );
 
 
@@ -893,11 +1387,113 @@ function renderDashboard() {
         )
     );
 
+
+    renderDashboardExtra();
+
 }
 
 
 /* =========================================================
-   15. INCOME TABLE
+   15. DASHBOARD EXTRA / NEW FEATURES
+   ========================================================= */
+
+function renderDashboardExtra() {
+
+    const summary =
+        calculateSummary();
+
+
+    /*
+       These IDs are optional.
+       If your dashboard HTML contains them,
+       they will automatically populate.
+    */
+
+    setText(
+        "#sponsorCount",
+        summary.sponsorCount
+    );
+
+
+    setText(
+        "#sponsorExpected",
+        formatCurrency(
+            summary.sponsorExpected
+        )
+    );
+
+
+    setText(
+        "#sponsorReceived",
+        formatCurrency(
+            summary.sponsorReceived
+        )
+    );
+
+
+    setText(
+        "#sponsorPending",
+        formatCurrency(
+            summary.sponsorPending
+        )
+    );
+
+
+    setText(
+        "#donationCount",
+        summary.donationCount
+    );
+
+
+    setText(
+        "#materialDonationCount",
+        summary.materialDonationCount
+    );
+
+
+    setText(
+        "#materialQuantity",
+        formatNumber(
+            summary.materialQuantity
+        )
+    );
+
+
+    /*
+       Common alternative IDs so the dashboard
+       can use different naming conventions.
+    */
+
+    setText(
+        "#totalSponsors",
+        summary.sponsorCount
+    );
+
+
+    setText(
+        "#totalDonations",
+        summary.donationCount
+    );
+
+
+    setText(
+        "#totalMaterials",
+        formatNumber(
+            summary.materialQuantity
+        )
+    );
+
+
+    renderRecentSponsors();
+
+
+    renderRecentDonations();
+
+}
+
+
+/* =========================================================
+   16. INCOME TABLE
    ========================================================= */
 
 function renderIncomeTable() {
@@ -914,25 +1510,22 @@ function renderIncomeTable() {
         App.data.income.length === 0
     ) {
 
-        table.innerHTML = `
-
-            <div class="empty-state">
-
-                <h4>
-                    No income records
-                </h4>
-
-                <p>
-                    Income records will appear here.
-                </p>
-
-            </div>
-
-        `;
+        table.innerHTML =
+            emptyState(
+                "No income records",
+                "Income records will appear here."
+            );
 
         return;
 
     }
+
+
+    const records =
+        App.data.income.slice(
+            0,
+            CONFIG.MAX_TABLE_ITEMS
+        );
 
 
     table.innerHTML = `
@@ -953,6 +1546,7 @@ function renderIncomeTable() {
                         <th>Received</th>
                         <th>Payment Mode</th>
                         <th>Notes</th>
+
                         ${
                             App.isAdmin
                                 ? "<th>Actions</th>"
@@ -965,75 +1559,119 @@ function renderIncomeTable() {
 
                 <tbody>
 
-                    ${App.data.income.map(item => `
+                    ${records.map(
+                        item => `
 
                         <tr>
 
                             <td>
-                                ${escapeHtml(item.ID)}
+                                ${escapeHtml(
+                                    recordId(item)
+                                )}
                             </td>
 
                             <td>
-                                ${formatDate(item.Date)}
+                                ${formatDate(
+                                    recordDate(item)
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.Name)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Name",
+                                            "name",
+                                            "Contributor",
+                                            "contributor"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.Category)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Category",
+                                            "category"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${formatCurrency(item.Expected)}
+                                ${formatCurrency(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Expected",
+                                            "expected",
+                                            "ExpectedAmount"
+                                        ],
+                                        0
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${formatCurrency(item.Received)}
+                                ${formatCurrency(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Received",
+                                            "received",
+                                            "ReceivedAmount"
+                                        ],
+                                        0
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.PaymentMode)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "PaymentMode",
+                                            "paymentMode",
+                                            "PaymentMethod"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.Notes)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Notes",
+                                            "notes"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             ${
                                 App.isAdmin
-                                    ? `
-
-                                    <td>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button edit-record-button"
-                                            data-type="income"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button delete-record-button"
-                                            data-type="income"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </td>
-
-                                    `
+                                    ? actionButtons(
+                                        "income",
+                                        recordId(item)
+                                    )
                                     : ""
                             }
 
                         </tr>
 
-                    `).join("")}
+                    `
+                    ).join("")}
 
                 </tbody>
 
@@ -1050,7 +1688,7 @@ function renderIncomeTable() {
 
 
 /* =========================================================
-   16. EXPENSE TABLE
+   17. EXPENSE TABLE
    ========================================================= */
 
 function renderExpenseTable() {
@@ -1067,21 +1705,11 @@ function renderExpenseTable() {
         App.data.expenses.length === 0
     ) {
 
-        table.innerHTML = `
-
-            <div class="empty-state">
-
-                <h4>
-                    No expense records
-                </h4>
-
-                <p>
-                    Expense records will appear here.
-                </p>
-
-            </div>
-
-        `;
+        table.innerHTML =
+            emptyState(
+                "No expense records",
+                "Expense records will appear here."
+            );
 
         return;
 
@@ -1118,71 +1746,95 @@ function renderExpenseTable() {
 
                 <tbody>
 
-                    ${App.data.expenses.map(item => `
+                    ${App.data.expenses.map(
+                        item => `
 
                         <tr>
 
                             <td>
-                                ${escapeHtml(item.ID)}
+                                ${escapeHtml(
+                                    recordId(item)
+                                )}
                             </td>
 
                             <td>
-                                ${formatDate(item.Date)}
+                                ${formatDate(
+                                    recordDate(item)
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.Description)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Description",
+                                            "description"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.Category)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Category",
+                                            "category"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${formatCurrency(item.Amount)}
+                                ${formatCurrency(
+                                    recordAmount(item)
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.PaymentMode)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "PaymentMode",
+                                            "paymentMode",
+                                            "PaymentMethod"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             <td>
-                                ${escapeHtml(item.Notes)}
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Notes",
+                                            "notes"
+                                        ],
+                                        "-"
+                                    )
+                                )}
                             </td>
 
                             ${
                                 App.isAdmin
-                                    ? `
-
-                                    <td>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button edit-record-button"
-                                            data-type="expense"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button delete-record-button"
-                                            data-type="expense"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </td>
-
-                                    `
+                                    ? actionButtons(
+                                        "expense",
+                                        recordId(item)
+                                    )
                                     : ""
                             }
 
                         </tr>
 
-                    `).join("")}
+                    `
+                    ).join("")}
 
                 </tbody>
 
@@ -1199,7 +1851,7 @@ function renderExpenseTable() {
 
 
 /* =========================================================
-   17. RENTAL TABLE
+   18. RENTAL TABLE
    ========================================================= */
 
 function renderRentalTable() {
@@ -1216,21 +1868,11 @@ function renderRentalTable() {
         App.data.rentals.length === 0
     ) {
 
-        table.innerHTML = `
-
-            <div class="empty-state">
-
-                <h4>
-                    No rental records
-                </h4>
-
-                <p>
-                    Rental records will appear here.
-                </p>
-
-            </div>
-
-        `;
+        table.innerHTML =
+            emptyState(
+                "No rental records",
+                "Rental records will appear here."
+            );
 
         return;
 
@@ -1253,6 +1895,7 @@ function renderRentalTable() {
                         <th>Category</th>
                         <th>Amount</th>
                         <th>Paid</th>
+                        <th>Pending</th>
                         <th>Notes</th>
 
                         ${
@@ -1267,71 +1910,132 @@ function renderRentalTable() {
 
                 <tbody>
 
-                    ${App.data.rentals.map(item => `
+                    ${App.data.rentals.map(
+                        item => {
 
-                        <tr>
+                            const amount =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Amount",
+                                            "amount",
+                                            "ExpectedRent"
+                                        ],
+                                        0
+                                    )
+                                );
 
-                            <td>
-                                ${escapeHtml(item.ID)}
-                            </td>
 
-                            <td>
-                                ${formatDate(item.Date)}
-                            </td>
+                            const paid =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Paid",
+                                            "paid",
+                                            "ActualPaid"
+                                        ],
+                                        0
+                                    )
+                                );
 
-                            <td>
-                                ${escapeHtml(item.Description)}
-                            </td>
 
-                            <td>
-                                ${escapeHtml(item.Category)}
-                            </td>
+                            const pending =
+                                Math.max(
+                                    amount - paid,
+                                    0
+                                );
 
-                            <td>
-                                ${formatCurrency(item.Amount)}
-                            </td>
 
-                            <td>
-                                ${formatCurrency(item.Paid)}
-                            </td>
+                            return `
 
-                            <td>
-                                ${escapeHtml(item.Notes)}
-                            </td>
-
-                            ${
-                                App.isAdmin
-                                    ? `
+                                <tr>
 
                                     <td>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button edit-record-button"
-                                            data-type="rental"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button delete-record-button"
-                                            data-type="rental"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Delete
-                                        </button>
-
+                                        ${escapeHtml(
+                                            recordId(item)
+                                        )}
                                     </td>
 
-                                    `
-                                    : ""
-                            }
+                                    <td>
+                                        ${formatDate(
+                                            recordDate(item)
+                                        )}
+                                    </td>
 
-                        </tr>
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Description",
+                                                    "description"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
 
-                    `).join("")}
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Category",
+                                                    "category"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            amount
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            paid
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            pending
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Notes",
+                                                    "notes"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    ${
+                                        App.isAdmin
+                                            ? actionButtons(
+                                                "rental",
+                                                recordId(item)
+                                            )
+                                            : ""
+                                    }
+
+                                </tr>
+
+                            `;
+
+                        }
+                    ).join("")}
 
                 </tbody>
 
@@ -1348,7 +2052,7 @@ function renderRentalTable() {
 
 
 /* =========================================================
-   18. TRANSPORT TABLE
+   19. TRANSPORT TABLE
    ========================================================= */
 
 function renderTransportTable() {
@@ -1365,21 +2069,11 @@ function renderTransportTable() {
         App.data.transport.length === 0
     ) {
 
-        table.innerHTML = `
-
-            <div class="empty-state">
-
-                <h4>
-                    No transport records
-                </h4>
-
-                <p>
-                    Transport records will appear here.
-                </p>
-
-            </div>
-
-        `;
+        table.innerHTML =
+            emptyState(
+                "No transport records",
+                "Transport records will appear here."
+            );
 
         return;
 
@@ -1402,6 +2096,7 @@ function renderTransportTable() {
                         <th>Category</th>
                         <th>Amount</th>
                         <th>Paid</th>
+                        <th>Pending</th>
                         <th>Notes</th>
 
                         ${
@@ -1416,71 +2111,133 @@ function renderTransportTable() {
 
                 <tbody>
 
-                    ${App.data.transport.map(item => `
+                    ${App.data.transport.map(
+                        item => {
 
-                        <tr>
+                            const amount =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Amount",
+                                            "amount",
+                                            "Total",
+                                            "total"
+                                        ],
+                                        0
+                                    )
+                                );
 
-                            <td>
-                                ${escapeHtml(item.ID)}
-                            </td>
 
-                            <td>
-                                ${formatDate(item.Date)}
-                            </td>
+                            const paid =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Paid",
+                                            "paid",
+                                            "ActualPaid"
+                                        ],
+                                        0
+                                    )
+                                );
 
-                            <td>
-                                ${escapeHtml(item.Description)}
-                            </td>
 
-                            <td>
-                                ${escapeHtml(item.Category)}
-                            </td>
+                            const pending =
+                                Math.max(
+                                    amount - paid,
+                                    0
+                                );
 
-                            <td>
-                                ${formatCurrency(item.Amount)}
-                            </td>
 
-                            <td>
-                                ${formatCurrency(item.Paid)}
-                            </td>
+                            return `
 
-                            <td>
-                                ${escapeHtml(item.Notes)}
-                            </td>
-
-                            ${
-                                App.isAdmin
-                                    ? `
+                                <tr>
 
                                     <td>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button edit-record-button"
-                                            data-type="transport"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="admin-action-button delete-record-button"
-                                            data-type="transport"
-                                            data-id="${escapeHtml(item.ID)}"
-                                        >
-                                            Delete
-                                        </button>
-
+                                        ${escapeHtml(
+                                            recordId(item)
+                                        )}
                                     </td>
 
-                                    `
-                                    : ""
-                            }
+                                    <td>
+                                        ${formatDate(
+                                            recordDate(item)
+                                        )}
+                                    </td>
 
-                        </tr>
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Description",
+                                                    "description"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
 
-                    `).join("")}
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Category",
+                                                    "category"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            amount
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            paid
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            pending
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Notes",
+                                                    "notes"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    ${
+                                        App.isAdmin
+                                            ? actionButtons(
+                                                "transport",
+                                                recordId(item)
+                                            )
+                                            : ""
+                                    }
+
+                                </tr>
+
+                            `;
+
+                        }
+                    ).join("")}
 
                 </tbody>
 
@@ -1497,7 +2254,597 @@ function renderTransportTable() {
 
 
 /* =========================================================
-   19. INCOME SUMMARY
+   20. SPONSOR TABLE
+   ========================================================= */
+
+function renderSponsorTable() {
+
+    const table =
+        $("#sponsorTable");
+
+    if (!table) {
+        return;
+    }
+
+
+    if (
+        App.data.sponsors.length === 0
+    ) {
+
+        table.innerHTML =
+            emptyState(
+                "No sponsors yet",
+                "Sponsor records will appear here."
+            );
+
+        return;
+
+    }
+
+
+    table.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Sponsor</th>
+                        <th>Category</th>
+                        <th>Expected</th>
+                        <th>Received</th>
+                        <th>Pending</th>
+                        <th>Contact</th>
+                        <th>Notes</th>
+
+                        ${
+                            App.isAdmin
+                                ? "<th>Actions</th>"
+                                : ""
+                        }
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${App.data.sponsors.map(
+                        item => {
+
+                            const expected =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Expected",
+                                            "expected",
+                                            "ExpectedAmount",
+                                            "expectedAmount",
+                                            "Amount",
+                                            "amount"
+                                        ],
+                                        0
+                                    )
+                                );
+
+
+                            const received =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Received",
+                                            "received",
+                                            "ReceivedAmount",
+                                            "receivedAmount",
+                                            "Paid",
+                                            "paid"
+                                        ],
+                                        0
+                                    )
+                                );
+
+
+                            const pending =
+                                Math.max(
+                                    expected - received,
+                                    0
+                                );
+
+
+                            return `
+
+                                <tr>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            recordId(item)
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatDate(
+                                            recordDate(item)
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Name",
+                                                    "name",
+                                                    "Sponsor",
+                                                    "sponsor",
+                                                    "SponsorName",
+                                                    "sponsorName"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Category",
+                                                    "category"
+                                                ],
+                                                "Sponsor"
+                                            )
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            expected
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            received
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            pending
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Phone",
+                                                    "phone",
+                                                    "Contact",
+                                                    "contact"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Notes",
+                                                    "notes"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    ${
+                                        App.isAdmin
+                                            ? actionButtons(
+                                                "sponsor",
+                                                recordId(item)
+                                            )
+                                            : ""
+                                    }
+
+                                </tr>
+
+                            `;
+
+                        }
+                    ).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+
+    initializeRecordActions();
+
+}
+
+
+/* =========================================================
+   21. DONATIONS & MATERIALS TABLE
+   ========================================================= */
+
+function renderDonationTable() {
+
+    const table =
+        $("#donationTable") ||
+        $("#donationsTable") ||
+        $("#materialDonationTable");
+
+
+    if (!table) {
+        return;
+    }
+
+
+    if (
+        App.data.donations.length === 0
+    ) {
+
+        table.innerHTML =
+            emptyState(
+                "No donations yet",
+                "Cash and material donations will appear here."
+            );
+
+        return;
+
+    }
+
+
+    table.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Donor</th>
+                        <th>Type</th>
+                        <th>Item / Description</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Amount</th>
+                        <th>Notes</th>
+
+                        ${
+                            App.isAdmin
+                                ? "<th>Actions</th>"
+                                : ""
+                        }
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${App.data.donations.map(
+                        item => `
+
+                        <tr>
+
+                            <td>
+                                ${escapeHtml(
+                                    recordId(item)
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatDate(
+                                    recordDate(item)
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Donor",
+                                            "donor",
+                                            "Name",
+                                            "name"
+                                        ],
+                                        "-"
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    donationType(item)
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Description",
+                                            "description",
+                                            "Item",
+                                            "item",
+                                            "Material",
+                                            "material"
+                                        ],
+                                        "-"
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+                                ${
+                                    isMaterialDonation(item)
+                                        ? formatNumber(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Quantity",
+                                                    "quantity",
+                                                    "Qty",
+                                                    "qty"
+                                                ],
+                                                0
+                                            )
+                                        )
+                                        : "—"
+                                }
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Unit",
+                                            "unit"
+                                        ],
+                                        "—"
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+                                ${
+                                    numberValue(
+                                        firstValue(
+                                            item,
+                                            [
+                                                "Amount",
+                                                "amount"
+                                            ],
+                                            0
+                                        )
+                                    ) > 0
+                                        ? formatCurrency(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Amount",
+                                                    "amount"
+                                                ],
+                                                0
+                                            )
+                                        )
+                                        : "—"
+                                }
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Notes",
+                                            "notes"
+                                        ],
+                                        "-"
+                                    )
+                                )}
+                            </td>
+
+                            ${
+                                App.isAdmin
+                                    ? actionButtons(
+                                        "donation",
+                                        recordId(item)
+                                    )
+                                    : ""
+                            }
+
+                        </tr>
+
+                    `
+                    ).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+
+    initializeRecordActions();
+
+}
+
+
+/* =========================================================
+   22. DONATION TYPE HELPERS
+   ========================================================= */
+
+function donationType(item) {
+
+    const type =
+        String(
+            firstValue(
+                item,
+                [
+                    "Type",
+                    "type",
+                    "DonationType",
+                    "donationType"
+                ],
+                ""
+            )
+        ).trim();
+
+
+    if (
+        type.toLowerCase() === "material"
+    ) {
+
+        return "Material";
+
+    }
+
+
+    if (
+        type.toLowerCase() === "cash"
+    ) {
+
+        return "Cash";
+
+    }
+
+
+    /*
+       If quantity/unit exists, treat it as material.
+    */
+
+    if (
+        numberValue(
+            firstValue(
+                item,
+                [
+                    "Quantity",
+                    "quantity",
+                    "Qty",
+                    "qty"
+                ],
+                0
+            )
+        ) > 0
+    ) {
+
+        return "Material";
+
+    }
+
+
+    return type || "Donation";
+
+}
+
+
+function isMaterialDonation(item) {
+
+    return (
+        donationType(item)
+            .toLowerCase() ===
+        "material"
+    );
+
+}
+
+
+/* =========================================================
+   23. EMPTY STATE
+   ========================================================= */
+
+function emptyState(
+    title,
+    message
+) {
+
+    return `
+
+        <div class="empty-state">
+
+            <h4>
+                ${escapeHtml(title)}
+            </h4>
+
+            <p>
+                ${escapeHtml(message)}
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   24. ACTION BUTTONS
+   ========================================================= */
+
+function actionButtons(
+    type,
+    id
+) {
+
+    return `
+
+        <td>
+
+            <button
+                type="button"
+                class="admin-action-button edit-record-button"
+                data-type="${escapeHtml(type)}"
+                data-id="${escapeHtml(id)}"
+            >
+                Edit
+            </button>
+
+            <button
+                type="button"
+                class="admin-action-button delete-record-button"
+                data-type="${escapeHtml(type)}"
+                data-id="${escapeHtml(id)}"
+            >
+                Delete
+            </button>
+
+        </td>
+
+    `;
+
+}
+
+
+/* =========================================================
+   25. INCOME SUMMARY
    ========================================================= */
 
 function renderIncomeSummary() {
@@ -1515,7 +2862,15 @@ function renderIncomeSummary() {
             (sum, item) =>
                 sum +
                 numberValue(
-                    item.Expected
+                    firstValue(
+                        item,
+                        [
+                            "Expected",
+                            "expected",
+                            "ExpectedAmount"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -1526,7 +2881,15 @@ function renderIncomeSummary() {
             (sum, item) =>
                 sum +
                 numberValue(
-                    item.Received
+                    firstValue(
+                        item,
+                        [
+                            "Received",
+                            "received",
+                            "ReceivedAmount"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -1554,7 +2917,6 @@ function renderIncomeSummary() {
 
         </div>
 
-
         <div class="summary-card">
 
             <span>
@@ -1567,7 +2929,6 @@ function renderIncomeSummary() {
 
         </div>
 
-
         <div class="summary-card">
 
             <span>
@@ -1579,7 +2940,6 @@ function renderIncomeSummary() {
             </strong>
 
         </div>
-
 
         <div class="summary-card">
 
@@ -1599,7 +2959,7 @@ function renderIncomeSummary() {
 
 
 /* =========================================================
-   20. EXPENSE SUMMARY
+   26. EXPENSE SUMMARY
    ========================================================= */
 
 function renderExpenseSummary() {
@@ -1616,9 +2976,7 @@ function renderExpenseSummary() {
         App.data.expenses.reduce(
             (sum, item) =>
                 sum +
-                numberValue(
-                    item.Amount
-                ),
+                recordAmount(item),
             0
         );
 
@@ -1636,7 +2994,6 @@ function renderExpenseSummary() {
             </strong>
 
         </div>
-
 
         <div class="summary-card">
 
@@ -1656,7 +3013,7 @@ function renderExpenseSummary() {
 
 
 /* =========================================================
-   21. RENTAL SUMMARY
+   27. RENTAL SUMMARY
    ========================================================= */
 
 function renderRentalSummary() {
@@ -1674,7 +3031,15 @@ function renderRentalSummary() {
             (sum, item) =>
                 sum +
                 numberValue(
-                    item.Amount
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "ExpectedRent"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -1685,7 +3050,15 @@ function renderRentalSummary() {
             (sum, item) =>
                 sum +
                 numberValue(
-                    item.Paid
+                    firstValue(
+                        item,
+                        [
+                            "Paid",
+                            "paid",
+                            "ActualPaid"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -1713,7 +3086,6 @@ function renderRentalSummary() {
 
         </div>
 
-
         <div class="summary-card">
 
             <span>
@@ -1726,7 +3098,6 @@ function renderRentalSummary() {
 
         </div>
 
-
         <div class="summary-card">
 
             <span>
@@ -1738,7 +3109,6 @@ function renderRentalSummary() {
             </strong>
 
         </div>
-
 
         <div class="summary-card">
 
@@ -1758,7 +3128,7 @@ function renderRentalSummary() {
 
 
 /* =========================================================
-   22. TRANSPORT SUMMARY
+   28. TRANSPORT SUMMARY
    ========================================================= */
 
 function renderTransportSummary() {
@@ -1776,7 +3146,16 @@ function renderTransportSummary() {
             (sum, item) =>
                 sum +
                 numberValue(
-                    item.Amount
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "Total",
+                            "total"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -1787,7 +3166,15 @@ function renderTransportSummary() {
             (sum, item) =>
                 sum +
                 numberValue(
-                    item.Paid
+                    firstValue(
+                        item,
+                        [
+                            "Paid",
+                            "paid",
+                            "ActualPaid"
+                        ],
+                        0
+                    )
                 ),
             0
         );
@@ -1815,7 +3202,6 @@ function renderTransportSummary() {
 
         </div>
 
-
         <div class="summary-card">
 
             <span>
@@ -1828,7 +3214,6 @@ function renderTransportSummary() {
 
         </div>
 
-
         <div class="summary-card">
 
             <span>
@@ -1840,7 +3225,6 @@ function renderTransportSummary() {
             </strong>
 
         </div>
-
 
         <div class="summary-card">
 
@@ -1860,7 +3244,199 @@ function renderTransportSummary() {
 
 
 /* =========================================================
-   23. RECENT TRANSACTIONS
+   29. SPONSOR SUMMARY
+   ========================================================= */
+
+function renderSponsorSummary() {
+
+    const element =
+        $("#sponsorSummary");
+
+    if (!element) {
+        return;
+    }
+
+
+    const summary =
+        calculateSummary();
+
+
+    element.innerHTML = `
+
+        <div class="summary-card">
+
+            <span>
+                Sponsors
+            </span>
+
+            <strong>
+                ${summary.sponsorCount}
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                Expected
+            </span>
+
+            <strong>
+                ${formatCurrency(
+                    summary.sponsorExpected
+                )}
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                Received
+            </span>
+
+            <strong>
+                ${formatCurrency(
+                    summary.sponsorReceived
+                )}
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                Pending
+            </span>
+
+            <strong>
+                ${formatCurrency(
+                    summary.sponsorPending
+                )}
+            </strong>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   30. DONATION SUMMARY
+   ========================================================= */
+
+function renderDonationSummary() {
+
+    const element =
+        $("#donationSummary");
+
+    if (!element) {
+        return;
+    }
+
+
+    const cash =
+        App.data.donations.reduce(
+            (sum, item) =>
+                sum +
+                numberValue(
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount"
+                        ],
+                        0
+                    )
+                ),
+            0
+        );
+
+
+    const materials =
+        App.data.donations.filter(
+            isMaterialDonation
+        );
+
+
+    const quantity =
+        materials.reduce(
+            (sum, item) =>
+                sum +
+                numberValue(
+                    firstValue(
+                        item,
+                        [
+                            "Quantity",
+                            "quantity",
+                            "Qty",
+                            "qty"
+                        ],
+                        0
+                    )
+                ),
+            0
+        );
+
+
+    element.innerHTML = `
+
+        <div class="summary-card">
+
+            <span>
+                Donations
+            </span>
+
+            <strong>
+                ${App.data.donations.length}
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                Cash Donations
+            </span>
+
+            <strong>
+                ${formatCurrency(cash)}
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                Material Records
+            </span>
+
+            <strong>
+                ${materials.length}
+            </strong>
+
+        </div>
+
+        <div class="summary-card">
+
+            <span>
+                Material Quantity
+            </span>
+
+            <strong>
+                ${formatNumber(quantity)}
+            </strong>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   31. RECENT TRANSACTIONS
    ========================================================= */
 
 function renderRecentTransactions() {
@@ -1887,15 +3463,29 @@ function renderRecentTransactions() {
 
             const expected =
                 numberValue(
-                    item.Expected ??
-                    item.expected
+                    firstValue(
+                        item,
+                        [
+                            "Expected",
+                            "expected",
+                            "ExpectedAmount"
+                        ],
+                        0
+                    )
                 );
 
 
             const received =
                 numberValue(
-                    item.Received ??
-                    item.received
+                    firstValue(
+                        item,
+                        [
+                            "Received",
+                            "received",
+                            "ReceivedAmount"
+                        ],
+                        0
+                    )
                 );
 
 
@@ -1926,18 +3516,29 @@ function renderRecentTransactions() {
                 type: "Income",
 
                 date:
-                    item.Date ??
-                    item.date,
+                    recordDate(item),
 
                 description:
-                    item.Name ??
-                    item.name ??
-                    "Income",
+                    firstValue(
+                        item,
+                        [
+                            "Name",
+                            "name",
+                            "Contributor",
+                            "contributor"
+                        ],
+                        "Income"
+                    ),
 
                 category:
-                    item.Category ??
-                    item.category ??
-                    "—",
+                    firstValue(
+                        item,
+                        [
+                            "Category",
+                            "category"
+                        ],
+                        "—"
+                    ),
 
                 amount:
                     received,
@@ -1961,24 +3562,30 @@ function renderRecentTransactions() {
                 type: "Expense",
 
                 date:
-                    item.Date ??
-                    item.date,
+                    recordDate(item),
 
                 description:
-                    item.Description ??
-                    item.description ??
-                    "Expense",
+                    firstValue(
+                        item,
+                        [
+                            "Description",
+                            "description"
+                        ],
+                        "Expense"
+                    ),
 
                 category:
-                    item.Category ??
-                    item.category ??
-                    "—",
+                    firstValue(
+                        item,
+                        [
+                            "Category",
+                            "category"
+                        ],
+                        "—"
+                    ),
 
                 amount:
-                    numberValue(
-                        item.Amount ??
-                        item.amount
-                    ),
+                    recordAmount(item),
 
                 status:
                     "Paid",
@@ -1998,38 +3605,30 @@ function renderRecentTransactions() {
 
             const amount =
                 numberValue(
-                    item.Amount ??
-                    item.amount
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "ExpectedRent"
+                        ],
+                        0
+                    )
                 );
 
 
             const paid =
                 numberValue(
-                    item.Paid ??
-                    item.paid
+                    firstValue(
+                        item,
+                        [
+                            "Paid",
+                            "paid",
+                            "ActualPaid"
+                        ],
+                        0
+                    )
                 );
-
-
-            let status =
-                "Pending";
-
-
-            let statusClass =
-                "pending";
-
-
-            if (
-                amount > 0 &&
-                paid >= amount
-            ) {
-
-                status =
-                    "Paid";
-
-                statusClass =
-                    "paid";
-
-            }
 
 
             transactions.push({
@@ -2037,25 +3636,42 @@ function renderRecentTransactions() {
                 type: "Rental",
 
                 date:
-                    item.Date ??
-                    item.date,
+                    recordDate(item),
 
                 description:
-                    item.Description ??
-                    item.description ??
-                    "Rental",
+                    firstValue(
+                        item,
+                        [
+                            "Description",
+                            "description"
+                        ],
+                        "Rental"
+                    ),
 
                 category:
-                    item.Category ??
-                    item.category ??
-                    "—",
+                    firstValue(
+                        item,
+                        [
+                            "Category",
+                            "category"
+                        ],
+                        "—"
+                    ),
 
                 amount:
                     paid,
 
-                status,
+                status:
+                    paid >= amount &&
+                    amount > 0
+                        ? "Paid"
+                        : "Pending",
 
-                statusClass
+                statusClass:
+                    paid >= amount &&
+                    amount > 0
+                        ? "paid"
+                        : "pending"
 
             });
 
@@ -2069,38 +3685,31 @@ function renderRecentTransactions() {
 
             const amount =
                 numberValue(
-                    item.Amount ??
-                    item.amount
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "Total",
+                            "total"
+                        ],
+                        0
+                    )
                 );
 
 
             const paid =
                 numberValue(
-                    item.Paid ??
-                    item.paid
+                    firstValue(
+                        item,
+                        [
+                            "Paid",
+                            "paid",
+                            "ActualPaid"
+                        ],
+                        0
+                    )
                 );
-
-
-            let status =
-                "Pending";
-
-
-            let statusClass =
-                "pending";
-
-
-            if (
-                amount > 0 &&
-                paid >= amount
-            ) {
-
-                status =
-                    "Paid";
-
-                statusClass =
-                    "paid";
-
-            }
 
 
             transactions.push({
@@ -2108,25 +3717,197 @@ function renderRecentTransactions() {
                 type: "Transport",
 
                 date:
-                    item.Date ??
-                    item.date,
+                    recordDate(item),
 
                 description:
-                    item.Description ??
-                    item.description ??
-                    "Transport",
+                    firstValue(
+                        item,
+                        [
+                            "Description",
+                            "description"
+                        ],
+                        "Transport"
+                    ),
 
                 category:
-                    item.Category ??
-                    item.category ??
-                    "—",
+                    firstValue(
+                        item,
+                        [
+                            "Category",
+                            "category"
+                        ],
+                        "—"
+                    ),
 
                 amount:
                     paid,
 
-                status,
+                status:
+                    paid >= amount &&
+                    amount > 0
+                        ? "Paid"
+                        : "Pending",
 
-                statusClass
+                statusClass:
+                    paid >= amount &&
+                    amount > 0
+                        ? "paid"
+                        : "pending"
+
+            });
+
+        });
+
+
+    /* ---------------- SPONSORS ---------------- */
+
+    (App.data.sponsors || [])
+        .forEach(item => {
+
+            const received =
+                numberValue(
+                    firstValue(
+                        item,
+                        [
+                            "Received",
+                            "received",
+                            "ReceivedAmount"
+                        ],
+                        0
+                    )
+                );
+
+
+            const expected =
+                numberValue(
+                    firstValue(
+                        item,
+                        [
+                            "Expected",
+                            "expected",
+                            "ExpectedAmount"
+                        ],
+                        0
+                    )
+                );
+
+
+            transactions.push({
+
+                type: "Sponsor",
+
+                date:
+                    recordDate(item),
+
+                description:
+                    firstValue(
+                        item,
+                        [
+                            "Name",
+                            "name",
+                            "Sponsor",
+                            "sponsor",
+                            "SponsorName"
+                        ],
+                        "Sponsor"
+                    ),
+
+                category:
+                    firstValue(
+                        item,
+                        [
+                            "Category",
+                            "category"
+                        ],
+                        "Sponsorship"
+                    ),
+
+                amount:
+                    received,
+
+                status:
+                    expected > 0 &&
+                    received >= expected
+                        ? "Received"
+                        : "Pending",
+
+                statusClass:
+                    expected > 0 &&
+                    received >= expected
+                        ? "received"
+                        : "pending"
+
+            });
+
+        });
+
+
+    /* ---------------- DONATIONS ---------------- */
+
+    (App.data.donations || [])
+        .forEach(item => {
+
+            const material =
+                isMaterialDonation(item);
+
+
+            transactions.push({
+
+                type:
+                    material
+                        ? "Material"
+                        : "Donation",
+
+                date:
+                    recordDate(item),
+
+                description:
+                    firstValue(
+                        item,
+                        [
+                            "Description",
+                            "description",
+                            "Item",
+                            "item",
+                            "Material",
+                            "material"
+                        ],
+                        firstValue(
+                            item,
+                            [
+                                "Donor",
+                                "donor",
+                                "Name",
+                                "name"
+                            ],
+                            "Donation"
+                        )
+                    ),
+
+                category:
+                    material
+                        ? "Material Donation"
+                        : "Cash Donation",
+
+                amount:
+                    numberValue(
+                        firstValue(
+                            item,
+                            [
+                                "Amount",
+                                "amount"
+                            ],
+                            0
+                        )
+                    ),
+
+                status:
+                    material
+                        ? "Received"
+                        : "Received",
+
+                statusClass:
+                    "received"
 
             });
 
@@ -2182,7 +3963,7 @@ function renderRecentTransactions() {
 
                     <p>
                         Finance transactions will appear here
-                        once income or outgoing records are added.
+                        once records are added.
                     </p>
 
                 </div>
@@ -2199,11 +3980,11 @@ function renderRecentTransactions() {
     const recentTransactions =
         transactions.slice(
             0,
-            10
+            CONFIG.MAX_RECENT_ITEMS
         );
 
 
-    let html = `
+    container.innerHTML = `
 
         <div class="table-wrapper">
 
@@ -2226,75 +4007,73 @@ function renderRecentTransactions() {
 
                 <tbody>
 
-    `;
+                    ${recentTransactions.map(
+                        transaction => `
 
+                        <tr>
 
-    recentTransactions.forEach(
-        transaction => {
+                            <td>
+                                ${formatDate(
+                                    transaction.date
+                                )}
+                            </td>
 
-            html += `
+                            <td>
 
-                <tr>
+                                <span class="transaction-type">
 
-                    <td>
-                        ${formatDate(
-                            transaction.date
-                        )}
-                    </td>
+                                    ${escapeHtml(
+                                        transaction.type
+                                    )}
 
-                    <td>
+                                </span>
 
-                        <span class="transaction-type">
+                            </td>
 
-                            ${escapeHtml(
-                                transaction.type
-                            )}
+                            <td>
+                                ${escapeHtml(
+                                    transaction.description
+                                )}
+                            </td>
 
-                        </span>
+                            <td>
+                                ${escapeHtml(
+                                    transaction.category
+                                )}
+                            </td>
 
-                    </td>
+                            <td>
 
-                    <td>
-                        ${escapeHtml(
-                            transaction.description
-                        )}
-                    </td>
+                                ${
+                                    transaction.amount > 0
+                                        ? formatCurrency(
+                                            transaction.amount
+                                        )
+                                        : "—"
+                                }
 
-                    <td>
-                        ${escapeHtml(
-                            transaction.category
-                        )}
-                    </td>
+                            </td>
 
-                    <td>
-                        ${formatCurrency(
-                            transaction.amount
-                        )}
-                    </td>
+                            <td>
 
-                    <td>
+                                <span
+                                    class="transaction-status ${escapeHtml(
+                                        transaction.statusClass
+                                    )}"
+                                >
 
-                        <span
-                            class="transaction-status ${transaction.statusClass}"
-                        >
+                                    ${escapeHtml(
+                                        transaction.status
+                                    )}
 
-                            ${escapeHtml(
-                                transaction.status
-                            )}
+                                </span>
 
-                        </span>
+                            </td>
 
-                    </td>
+                        </tr>
 
-                </tr>
-
-            `;
-
-        }
-    );
-
-
-    html += `
+                    `
+                    ).join("")}
 
                 </tbody>
 
@@ -2304,34 +4083,391 @@ function renderRecentTransactions() {
 
     `;
 
+}
 
-    container.innerHTML =
-        html;
+
+/* =========================================================
+   32. RECENT SPONSORS
+   ========================================================= */
+
+function renderRecentSponsors() {
+
+    const container =
+        $("#recentSponsors");
+
+    if (!container) {
+        return;
+    }
+
+
+    const records =
+        [...App.data.sponsors]
+            .sort(
+                (a, b) =>
+                    new Date(
+                        recordDate(b) || 0
+                    ) -
+                    new Date(
+                        recordDate(a) || 0
+                    )
+            )
+            .slice(
+                0,
+                5
+            );
+
+
+    if (records.length === 0) {
+
+        container.innerHTML =
+            emptyState(
+                "No sponsors yet",
+                "Sponsors will appear here."
+            );
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+                        <th>Sponsor</th>
+                        <th>Expected</th>
+                        <th>Received</th>
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${records.map(
+                        item => {
+
+                            const expected =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Expected",
+                                            "expected",
+                                            "ExpectedAmount"
+                                        ],
+                                        0
+                                    )
+                                );
+
+
+                            const received =
+                                numberValue(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Received",
+                                            "received",
+                                            "ReceivedAmount"
+                                        ],
+                                        0
+                                    )
+                                );
+
+
+                            const complete =
+                                expected > 0 &&
+                                received >= expected;
+
+
+                            return `
+
+                                <tr>
+
+                                    <td>
+                                        ${formatDate(
+                                            recordDate(item)
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${escapeHtml(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Name",
+                                                    "name",
+                                                    "Sponsor",
+                                                    "sponsor",
+                                                    "SponsorName"
+                                                ],
+                                                "-"
+                                            )
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            expected
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        ${formatCurrency(
+                                            received
+                                        )}
+                                    </td>
+
+                                    <td>
+
+                                        <span
+                                            class="transaction-status ${
+                                                complete
+                                                    ? "received"
+                                                    : "pending"
+                                            }"
+                                        >
+                                            ${
+                                                complete
+                                                    ? "Received"
+                                                    : "Pending"
+                                            }
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            `;
+
+                        }
+                    ).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
 
 }
 
 
 /* =========================================================
-   24. RENDER APPLICATION
+   33. RECENT DONATIONS
+   ========================================================= */
+
+function renderRecentDonations() {
+
+    const container =
+        $("#recentDonations") ||
+        $("#recentMaterialDonations");
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const records =
+        [...App.data.donations]
+            .sort(
+                (a, b) =>
+                    new Date(
+                        recordDate(b) || 0
+                    ) -
+                    new Date(
+                        recordDate(a) || 0
+                    )
+            )
+            .slice(
+                0,
+                5
+            );
+
+
+    if (records.length === 0) {
+
+        container.innerHTML =
+            emptyState(
+                "No donations yet",
+                "Donations and materials will appear here."
+            );
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+                        <th>Donor</th>
+                        <th>Type</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${records.map(
+                        item => `
+
+                        <tr>
+
+                            <td>
+                                ${formatDate(
+                                    recordDate(item)
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Donor",
+                                            "donor",
+                                            "Name",
+                                            "name"
+                                        ],
+                                        "-"
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    donationType(item)
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Description",
+                                            "description",
+                                            "Item",
+                                            "item",
+                                            "Material",
+                                            "material"
+                                        ],
+                                        "-"
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+
+                                ${
+                                    isMaterialDonation(item)
+                                        ? formatNumber(
+                                            firstValue(
+                                                item,
+                                                [
+                                                    "Quantity",
+                                                    "quantity",
+                                                    "Qty",
+                                                    "qty"
+                                                ],
+                                                0
+                                            )
+                                        )
+                                        : "—"
+                                }
+
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    firstValue(
+                                        item,
+                                        [
+                                            "Unit",
+                                            "unit"
+                                        ],
+                                        "—"
+                                    )
+                                )}
+                            </td>
+
+                        </tr>
+
+                    `
+                    ).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   34. RENDER APPLICATION
    ========================================================= */
 
 function renderApplication() {
 
+    clearApplicationError();
+
+
     renderDashboard();
+
 
     renderIncomeSummary();
     renderIncomeTable();
 
+
     renderExpenseSummary();
     renderExpenseTable();
+
 
     renderRentalSummary();
     renderRentalTable();
 
+
     renderTransportSummary();
     renderTransportTable();
 
+
+    renderSponsorSummary();
+    renderSponsorTable();
+
+
+    renderDonationSummary();
+    renderDonationTable();
+
+
     renderRecentTransactions();
+
 
     updateAdminInterface();
 
@@ -2339,7 +4475,7 @@ function renderApplication() {
 
 
 /* =========================================================
-   25. NAVIGATION
+   35. NAVIGATION
    ========================================================= */
 
 function navigateTo(page) {
@@ -2394,7 +4530,7 @@ function navigateTo(page) {
 
 
 /* =========================================================
-   26. NAVIGATION EVENTS
+   36. NAVIGATION EVENTS
    ========================================================= */
 
 function initializeNavigation() {
@@ -2419,7 +4555,7 @@ function initializeNavigation() {
 
 
 /* =========================================================
-   27. LOGIN MODAL
+   37. LOGIN MODAL
    ========================================================= */
 
 function openLoginModal() {
@@ -2483,7 +4619,7 @@ function closeLoginModal() {
 
 
 /* =========================================================
-   28. ADMIN LOGIN
+   38. ADMIN LOGIN
    ========================================================= */
 
 async function adminLogin(
@@ -2506,12 +4642,6 @@ async function adminLogin(
                     password
 
             });
-
-
-        console.log(
-            "Login response:",
-            result
-        );
 
 
         if (
@@ -2608,7 +4738,7 @@ async function adminLogin(
 
 
 /* =========================================================
-   29. ADMIN LOGOUT
+   39. ADMIN LOGOUT
    ========================================================= */
 
 async function adminLogout() {
@@ -2676,7 +4806,7 @@ async function adminLogout() {
 
 
 /* =========================================================
-   30. ADMIN MODE
+   40. ADMIN MODE
    ========================================================= */
 
 function setAdminMode(enabled) {
@@ -2719,7 +4849,7 @@ function setAdminMode(enabled) {
 
 
 /* =========================================================
-   31. ADMIN UI
+   41. ADMIN UI
    ========================================================= */
 
 function updateAdminInterface() {
@@ -2734,11 +4864,48 @@ function updateAdminInterface() {
 
         });
 
+
+    /*
+       Add buttons should remain hidden
+       from public users.
+    */
+
+    [
+        "#addIncomeButton",
+        "#addExpenseButton",
+        "#addRentalButton",
+        "#addTransportButton",
+        "#addSponsorButton",
+        "#addDonationButton",
+        "#addMaterialDonationButton"
+    ]
+        .forEach(selector => {
+
+            const element =
+                $(selector);
+
+            if (element) {
+
+                element.style.display =
+                    App.isAdmin
+                        ? ""
+                        : "none";
+
+            }
+
+        });
+
+
+    /*
+       Action columns/buttons are rendered
+       only when App.isAdmin is true.
+    */
+
 }
 
 
 /* =========================================================
-   32. LOGIN MESSAGE
+   42. LOGIN MESSAGE
    ========================================================= */
 
 function showLoginMessage(
@@ -2768,7 +4935,7 @@ function showLoginMessage(
 
 
 /* =========================================================
-   33. LOGIN INITIALIZATION
+   43. LOGIN INITIALIZATION
    ========================================================= */
 
 function initializeLogin() {
@@ -2894,27 +5061,11 @@ function initializeLogin() {
 
     }
 
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (
-                event.key === "Escape"
-            ) {
-
-                closeLoginModal();
-
-            }
-
-        }
-    );
-
 }
 
 
 /* =========================================================
-   34. RESTORE ADMIN SESSION
+   44. RESTORE ADMIN SESSION
    ========================================================= */
 
 function restoreAdminSession() {
@@ -2985,22 +5136,21 @@ function restoreAdminSession() {
 
 
 /* =========================================================
-   35. QUICK ACCESS
+   45. QUICK ACCESS
    ========================================================= */
 
 function initializeQuickAccess() {
 
     /*
-       Quick Access buttons use data-page.
-       Navigation is already initialized
-       by initializeNavigation().
+       Navigation is handled centrally by
+       initializeNavigation().
     */
 
 }
 
 
 /* =========================================================
-   36. ADMIN FORM MODAL
+   46. ADMIN FORM MODAL
    ========================================================= */
 
 function createAdminFormModal() {
@@ -3025,7 +5175,7 @@ function createAdminFormModal() {
 
 
     modal.className =
-        "modal";
+        "modal finance-form-modal admin-form-modal";
 
 
     modal.setAttribute(
@@ -3105,7 +5255,7 @@ function createAdminFormModal() {
 
 
 /* =========================================================
-   37. FORM FIELD
+   47. FORM FIELD HELPERS
    ========================================================= */
 
 function formInput(
@@ -3137,6 +5287,11 @@ function formInput(
                 value="${escapeHtml(value)}"
                 placeholder="${escapeHtml(placeholder)}"
                 ${required ? "required" : ""}
+                ${
+                    type === "number"
+                        ? 'min="0" step="any"'
+                        : ""
+                }
             />
 
         </div>
@@ -3183,7 +5338,8 @@ function formSelect(
                         <option
                             value="${escapeHtml(option)}"
                             ${
-                                selected === option
+                                String(selected) ===
+                                String(option)
                                     ? "selected"
                                     : ""
                             }
@@ -3233,7 +5389,79 @@ function formTextarea(
 
 
 /* =========================================================
-   38. OPEN ADD FORM
+   48. FORM HEADER
+   ========================================================= */
+
+function formHeader(
+    title,
+    description
+) {
+
+    return `
+
+        <div class="admin-form-header">
+
+            <span>
+                DUSSEHRA FINANCE
+            </span>
+
+            <h2>
+                ${escapeHtml(title)}
+            </h2>
+
+            <p>
+                ${escapeHtml(description)}
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   49. FORM FOOTER
+   ========================================================= */
+
+function formFooter(
+    saveText
+) {
+
+    return `
+
+        <div
+            id="adminFormMessage"
+            class="admin-form-message"
+        ></div>
+
+
+        <div class="admin-form-actions">
+
+            <button
+                type="button"
+                class="secondary-button"
+                id="cancelAdminForm"
+            >
+                Cancel
+            </button>
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                ${escapeHtml(saveText)}
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   50. OPEN ADD FORM
    ========================================================= */
 
 function openAddForm(type) {
@@ -3252,6 +5480,9 @@ function openAddForm(type) {
     App.formType =
         type;
 
+    App.editingId =
+        null;
+
 
     const modal =
         createAdminFormModal();
@@ -3266,16 +5497,12 @@ function openAddForm(type) {
     }
 
 
-    let title =
-        "";
+    const today =
+        todayForInput();
 
 
     let form =
         "";
-
-
-    const today =
-        todayForInput();
 
 
     /* =====================================================
@@ -3284,10 +5511,6 @@ function openAddForm(type) {
 
     if (type === "income") {
 
-        title =
-            "Add Income";
-
-
         form = `
 
             <form
@@ -3295,22 +5518,10 @@ function openAddForm(type) {
                 class="admin-record-form"
             >
 
-                <div class="admin-form-header">
-
-                    <span>
-                        DUSSEHRA FINANCE
-                    </span>
-
-                    <h2>
-                        Add Income
-                    </h2>
-
-                    <p>
-                        Enter the income received or expected.
-                    </p>
-
-                </div>
-
+                ${formHeader(
+                    "Add Income",
+                    "Enter the income received or expected."
+                )}
 
                 <div class="admin-form-grid">
 
@@ -3322,7 +5533,6 @@ function openAddForm(type) {
                         today
                     )}
 
-
                     ${formInput(
                         "recordName",
                         "Name",
@@ -3331,7 +5541,6 @@ function openAddForm(type) {
                         "",
                         "Sponsor / contributor name"
                     )}
-
 
                     ${formInput(
                         "recordCategory",
@@ -3342,7 +5551,6 @@ function openAddForm(type) {
                         "Sponsorship / Contribution / Other"
                     )}
 
-
                     ${formInput(
                         "recordExpected",
                         "Expected Amount",
@@ -3352,16 +5560,14 @@ function openAddForm(type) {
                         "0.00"
                     )}
 
-
                     ${formInput(
                         "recordReceived",
                         "Received Amount",
                         "number",
                         true,
-                        "",
+                        "0",
                         "0.00"
                     )}
-
 
                     ${formSelect(
                         "recordPaymentMode",
@@ -3385,31 +5591,9 @@ function openAddForm(type) {
 
                 </div>
 
-
-                <div
-                    id="adminFormMessage"
-                    class="admin-form-message"
-                ></div>
-
-
-                <div class="admin-form-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        id="cancelAdminForm"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="primary-button"
-                    >
-                        Save Income
-                    </button>
-
-                </div>
+                ${formFooter(
+                    "Save Income"
+                )}
 
             </form>
 
@@ -3424,10 +5608,6 @@ function openAddForm(type) {
 
     else if (type === "expense") {
 
-        title =
-            "Add Expense";
-
-
         form = `
 
             <form
@@ -3435,22 +5615,10 @@ function openAddForm(type) {
                 class="admin-record-form"
             >
 
-                <div class="admin-form-header">
-
-                    <span>
-                        DUSSEHRA FINANCE
-                    </span>
-
-                    <h2>
-                        Add Expense
-                    </h2>
-
-                    <p>
-                        Record festival expenses.
-                    </p>
-
-                </div>
-
+                ${formHeader(
+                    "Add Expense",
+                    "Record festival expenses."
+                )}
 
                 <div class="admin-form-grid">
 
@@ -3462,7 +5630,6 @@ function openAddForm(type) {
                         today
                     )}
 
-
                     ${formInput(
                         "recordDescription",
                         "Description",
@@ -3471,7 +5638,6 @@ function openAddForm(type) {
                         "",
                         "Example: Food supplies"
                     )}
-
 
                     ${formInput(
                         "recordCategory",
@@ -3482,7 +5648,6 @@ function openAddForm(type) {
                         "Food / Decoration / Pooja / Other"
                     )}
 
-
                     ${formInput(
                         "recordAmount",
                         "Amount",
@@ -3491,7 +5656,6 @@ function openAddForm(type) {
                         "",
                         "0.00"
                     )}
-
 
                     ${formSelect(
                         "recordPaymentMode",
@@ -3506,7 +5670,6 @@ function openAddForm(type) {
                         true
                     )}
 
-
                     ${formTextarea(
                         "recordNotes",
                         "Notes",
@@ -3516,31 +5679,9 @@ function openAddForm(type) {
 
                 </div>
 
-
-                <div
-                    id="adminFormMessage"
-                    class="admin-form-message"
-                ></div>
-
-
-                <div class="admin-form-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        id="cancelAdminForm"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="primary-button"
-                    >
-                        Save Expense
-                    </button>
-
-                </div>
+                ${formFooter(
+                    "Save Expense"
+                )}
 
             </form>
 
@@ -3555,10 +5696,6 @@ function openAddForm(type) {
 
     else if (type === "rental") {
 
-        title =
-            "Add Rental";
-
-
         form = `
 
             <form
@@ -3566,22 +5703,10 @@ function openAddForm(type) {
                 class="admin-record-form"
             >
 
-                <div class="admin-form-header">
-
-                    <span>
-                        DUSSEHRA FINANCE
-                    </span>
-
-                    <h2>
-                        Add Rental
-                    </h2>
-
-                    <p>
-                        Record rented items and payments.
-                    </p>
-
-                </div>
-
+                ${formHeader(
+                    "Add Rental",
+                    "Record rented items and payments."
+                )}
 
                 <div class="admin-form-grid">
 
@@ -3593,7 +5718,6 @@ function openAddForm(type) {
                         today
                     )}
 
-
                     ${formInput(
                         "recordDescription",
                         "Description",
@@ -3602,7 +5726,6 @@ function openAddForm(type) {
                         "",
                         "Example: Cooking vessels"
                     )}
-
 
                     ${formInput(
                         "recordCategory",
@@ -3613,7 +5736,6 @@ function openAddForm(type) {
                         "Vessels / Equipment / Other"
                     )}
 
-
                     ${formInput(
                         "recordAmount",
                         "Total Amount",
@@ -3623,16 +5745,14 @@ function openAddForm(type) {
                         "0.00"
                     )}
 
-
                     ${formInput(
                         "recordPaid",
                         "Paid Amount",
                         "number",
                         true,
-                        "",
+                        "0",
                         "0.00"
                     )}
-
 
                     ${formTextarea(
                         "recordNotes",
@@ -3643,31 +5763,9 @@ function openAddForm(type) {
 
                 </div>
 
-
-                <div
-                    id="adminFormMessage"
-                    class="admin-form-message"
-                ></div>
-
-
-                <div class="admin-form-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        id="cancelAdminForm"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="primary-button"
-                    >
-                        Save Rental
-                    </button>
-
-                </div>
+                ${formFooter(
+                    "Save Rental"
+                )}
 
             </form>
 
@@ -3682,10 +5780,6 @@ function openAddForm(type) {
 
     else if (type === "transport") {
 
-        title =
-            "Add Transport";
-
-
         form = `
 
             <form
@@ -3693,22 +5787,10 @@ function openAddForm(type) {
                 class="admin-record-form"
             >
 
-                <div class="admin-form-header">
-
-                    <span>
-                        DUSSEHRA FINANCE
-                    </span>
-
-                    <h2>
-                        Add Transport
-                    </h2>
-
-                    <p>
-                        Record festival transportation costs.
-                    </p>
-
-                </div>
-
+                ${formHeader(
+                    "Add Transport",
+                    "Record festival transportation costs."
+                )}
 
                 <div class="admin-form-grid">
 
@@ -3720,7 +5802,6 @@ function openAddForm(type) {
                         today
                     )}
 
-
                     ${formInput(
                         "recordDescription",
                         "Description",
@@ -3729,7 +5810,6 @@ function openAddForm(type) {
                         "",
                         "Example: Idol transportation"
                     )}
-
 
                     ${formInput(
                         "recordCategory",
@@ -3740,7 +5820,6 @@ function openAddForm(type) {
                         "Idol / Materials / People / Other"
                     )}
 
-
                     ${formInput(
                         "recordAmount",
                         "Total Amount",
@@ -3750,16 +5829,14 @@ function openAddForm(type) {
                         "0.00"
                     )}
 
-
                     ${formInput(
                         "recordPaid",
                         "Paid Amount",
                         "number",
                         true,
-                        "",
+                        "0",
                         "0.00"
                     )}
-
 
                     ${formTextarea(
                         "recordNotes",
@@ -3770,35 +5847,255 @@ function openAddForm(type) {
 
                 </div>
 
-
-                <div
-                    id="adminFormMessage"
-                    class="admin-form-message"
-                ></div>
-
-
-                <div class="admin-form-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        id="cancelAdminForm"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="primary-button"
-                    >
-                        Save Transport
-                    </button>
-
-                </div>
+                ${formFooter(
+                    "Save Transport"
+                )}
 
             </form>
 
         `;
+
+    }
+
+
+    /* =====================================================
+       SPONSOR
+       ===================================================== */
+
+    else if (type === "sponsor") {
+
+        form = `
+
+            <form
+                id="adminRecordForm"
+                class="admin-record-form"
+            >
+
+                ${formHeader(
+                    "Add Sponsor",
+                    "Record a festival sponsor and sponsorship commitment."
+                )}
+
+                <div class="admin-form-grid">
+
+                    ${formInput(
+                        "recordDate",
+                        "Date",
+                        "date",
+                        true,
+                        today
+                    )}
+
+                    ${formInput(
+                        "recordName",
+                        "Sponsor Name",
+                        "text",
+                        true,
+                        "",
+                        "Individual / business / organization"
+                    )}
+
+                    ${formInput(
+                        "recordCategory",
+                        "Category",
+                        "text",
+                        true,
+                        "Sponsorship",
+                        "Main Sponsor / Idol / Food / Lighting / Other"
+                    )}
+
+                    ${formInput(
+                        "recordExpected",
+                        "Expected Sponsorship",
+                        "number",
+                        true,
+                        "",
+                        "0.00"
+                    )}
+
+                    ${formInput(
+                        "recordReceived",
+                        "Received Amount",
+                        "number",
+                        true,
+                        "0",
+                        "0.00"
+                    )}
+
+                    ${formInput(
+                        "recordPhone",
+                        "Contact",
+                        "tel",
+                        false,
+                        "",
+                        "Phone number"
+                    )}
+
+                    ${formInput(
+                        "recordReference",
+                        "Reference",
+                        "text",
+                        false,
+                        "",
+                        "Payment/reference number"
+                    )}
+
+                    ${formSelect(
+                        "recordPaymentMode",
+                        "Payment Mode",
+                        [
+                            "Cash",
+                            "UPI",
+                            "Bank Transfer",
+                            "Cheque",
+                            "Other"
+                        ],
+                        false
+                    )}
+
+                    ${formTextarea(
+                        "recordNotes",
+                        "Notes",
+                        "",
+                        "Optional notes"
+                    )}
+
+                </div>
+
+                ${formFooter(
+                    "Save Sponsor"
+                )}
+
+            </form>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       DONATION / MATERIAL
+       ===================================================== */
+
+    else if (type === "donation") {
+
+        form = `
+
+            <form
+                id="adminRecordForm"
+                class="admin-record-form"
+            >
+
+                ${formHeader(
+                    "Add Donation",
+                    "Record cash or material donations. Material donations can be quantity-only."
+                )}
+
+                <div class="admin-form-grid">
+
+                    ${formInput(
+                        "recordDate",
+                        "Date",
+                        "date",
+                        true,
+                        today
+                    )}
+
+                    ${formInput(
+                        "recordDonor",
+                        "Donor Name",
+                        "text",
+                        true,
+                        "",
+                        "Donor / family / organization"
+                    )}
+
+                    ${formSelect(
+                        "recordDonationType",
+                        "Donation Type",
+                        [
+                            "Cash",
+                            "Material"
+                        ],
+                        true
+                    )}
+
+                    ${formInput(
+                        "recordDescription",
+                        "Item / Description",
+                        "text",
+                        true,
+                        "",
+                        "Example: Rice / Oil / Plates / Cash donation"
+                    )}
+
+                    ${formInput(
+                        "recordQuantity",
+                        "Quantity",
+                        "number",
+                        false,
+                        "",
+                        "0"
+                    )}
+
+                    ${formInput(
+                        "recordUnit",
+                        "Unit",
+                        "text",
+                        false,
+                        "",
+                        "kg / litres / bags / boxes / pieces"
+                    )}
+
+                    ${formInput(
+                        "recordAmount",
+                        "Cash Value",
+                        "number",
+                        false,
+                        "0",
+                        "0.00"
+                    )}
+
+                    ${formSelect(
+                        "recordPaymentMode",
+                        "Payment Mode",
+                        [
+                            "Cash",
+                            "UPI",
+                            "Bank Transfer",
+                            "Cheque",
+                            "Other"
+                        ],
+                        false
+                    )}
+
+                    ${formTextarea(
+                        "recordNotes",
+                        "Notes",
+                        "",
+                        "Optional notes"
+                    )}
+
+                </div>
+
+                ${formFooter(
+                    "Save Donation"
+                )}
+
+            </form>
+
+        `;
+
+    }
+
+
+    else {
+
+        alert(
+            "Unknown form type."
+        );
+
+        return;
 
     }
 
@@ -3821,6 +6118,9 @@ function openAddForm(type) {
     initializeAdminRecordForm();
 
 
+    initializeDonationTypeFields();
+
+
     setTimeout(
         () => {
 
@@ -3841,7 +6141,96 @@ function openAddForm(type) {
 
 
 /* =========================================================
-   39. CLOSE ADMIN FORM
+   51. DONATION TYPE UI
+   ========================================================= */
+
+function initializeDonationTypeFields() {
+
+    const type =
+        $("#recordDonationType");
+
+
+    if (!type) {
+        return;
+    }
+
+
+    const quantity =
+        $("#recordQuantity");
+
+
+    const unit =
+        $("#recordUnit");
+
+
+    const amount =
+        $("#recordAmount");
+
+
+    function updateFields() {
+
+        const isMaterial =
+            type.value === "Material";
+
+
+        if (quantity) {
+
+            quantity.required =
+                isMaterial;
+
+        }
+
+
+        if (unit) {
+
+            unit.required =
+                isMaterial;
+
+        }
+
+
+        if (amount) {
+
+            /*
+               Cash donation requires amount.
+               Material donation does not.
+            */
+
+            amount.required =
+                !isMaterial;
+
+
+            if (isMaterial) {
+
+                amount.placeholder =
+                    "Optional estimated value";
+
+            }
+            else {
+
+                amount.placeholder =
+                    "0.00";
+
+            }
+
+        }
+
+    }
+
+
+    type.addEventListener(
+        "change",
+        updateFields
+    );
+
+
+    updateFields();
+
+}
+
+
+/* =========================================================
+   52. CLOSE ADMIN FORM
    ========================================================= */
 
 function closeAdminFormModal() {
@@ -3868,99 +6257,95 @@ function closeAdminFormModal() {
     App.formType =
         null;
 
+    App.editingId =
+        null;
+
 }
 
 
 /* =========================================================
-   40. INITIALIZE ADD BUTTONS
+   53. INITIALIZE ADD BUTTONS
    ========================================================= */
 
 function initializeAddButtons() {
 
-    const incomeButton =
-        $("#addIncomeButton");
+    const buttons = {
+
+        addIncomeButton:
+            "income",
+
+        addExpenseButton:
+            "expense",
+
+        addRentalButton:
+            "rental",
+
+        addTransportButton:
+            "transport",
+
+        addSponsorButton:
+            "sponsor",
+
+        addDonationButton:
+            "donation",
+
+        addMaterialDonationButton:
+            "donation"
+
+    };
 
 
-    if (incomeButton) {
+    Object.entries(buttons)
+        .forEach(
+            ([id, type]) => {
 
-        incomeButton.addEventListener(
-            "click",
-            function () {
+                const button =
+                    document.getElementById(
+                        id
+                    );
 
-                openAddForm(
-                    "income"
+
+                if (!button) {
+                    return;
+                }
+
+
+                /*
+                   Prevent duplicate listeners
+                   if initialization is called again.
+                */
+
+                if (
+                    button.dataset.dfBound ===
+                    "true"
+                ) {
+                    return;
+                }
+
+
+                button.dataset.dfBound =
+                    "true";
+
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        openAddForm(
+                            type
+                        );
+
+                    }
                 );
 
             }
         );
-
-    }
-
-
-    const expenseButton =
-        $("#addExpenseButton");
-
-
-    if (expenseButton) {
-
-        expenseButton.addEventListener(
-            "click",
-            function () {
-
-                openAddForm(
-                    "expense"
-                );
-
-            }
-        );
-
-    }
-
-
-    const rentalButton =
-        $("#addRentalButton");
-
-
-    if (rentalButton) {
-
-        rentalButton.addEventListener(
-            "click",
-            function () {
-
-                openAddForm(
-                    "rental"
-                );
-
-            }
-        );
-
-    }
-
-
-    const transportButton =
-        $("#addTransportButton");
-
-
-    if (transportButton) {
-
-        transportButton.addEventListener(
-            "click",
-            function () {
-
-                openAddForm(
-                    "transport"
-                );
-
-            }
-        );
-
-    }
 
 }
 
 
 /* =========================================================
-   41. INITIALIZE ADMIN RECORD FORM
+   54. INITIALIZE ADMIN RECORD FORM
    ========================================================= */
 
 function initializeAdminRecordForm() {
@@ -4003,7 +6388,7 @@ function initializeAdminRecordForm() {
 
 
 /* =========================================================
-   42. SHOW FORM MESSAGE
+   55. FORM MESSAGE
    ========================================================= */
 
 function showAdminFormMessage(
@@ -4033,7 +6418,7 @@ function showAdminFormMessage(
 
 
 /* =========================================================
-   43. SUBMIT ADMIN RECORD
+   56. SUBMIT ADMIN RECORD
    ========================================================= */
 
 async function submitAdminRecord() {
@@ -4108,6 +6493,18 @@ async function submitAdminRecord() {
                 );
 
 
+            if (
+                expected < 0 ||
+                received < 0
+            ) {
+
+                throw new Error(
+                    "Amounts cannot be negative."
+                );
+
+            }
+
+
             if (received > expected) {
 
                 throw new Error(
@@ -4133,11 +6530,9 @@ async function submitAdminRecord() {
                 category:
                     $("#recordCategory").value.trim(),
 
-                expected:
-                    expected,
+                expected,
 
-                received:
-                    received,
+                received,
 
                 paymentMode:
                     $("#recordPaymentMode").value,
@@ -4162,6 +6557,15 @@ async function submitAdminRecord() {
                 );
 
 
+            if (amount < 0) {
+
+                throw new Error(
+                    "Amount cannot be negative."
+                );
+
+            }
+
+
             payload = {
 
                 ...payload,
@@ -4178,8 +6582,7 @@ async function submitAdminRecord() {
                 category:
                     $("#recordCategory").value.trim(),
 
-                amount:
-                    amount,
+                amount,
 
                 paymentMode:
                     $("#recordPaymentMode").value,
@@ -4210,6 +6613,18 @@ async function submitAdminRecord() {
                 );
 
 
+            if (
+                amount < 0 ||
+                paid < 0
+            ) {
+
+                throw new Error(
+                    "Amounts cannot be negative."
+                );
+
+            }
+
+
             if (paid > amount) {
 
                 throw new Error(
@@ -4235,11 +6650,9 @@ async function submitAdminRecord() {
                 category:
                     $("#recordCategory").value.trim(),
 
-                amount:
-                    amount,
+                amount,
 
-                paid:
-                    paid,
+                paid,
 
                 notes:
                     $("#recordNotes").value.trim()
@@ -4267,6 +6680,18 @@ async function submitAdminRecord() {
                 );
 
 
+            if (
+                amount < 0 ||
+                paid < 0
+            ) {
+
+                throw new Error(
+                    "Amounts cannot be negative."
+                );
+
+            }
+
+
             if (paid > amount) {
 
                 throw new Error(
@@ -4292,11 +6717,198 @@ async function submitAdminRecord() {
                 category:
                     $("#recordCategory").value.trim(),
 
+                amount,
+
+                paid,
+
+                notes:
+                    $("#recordNotes").value.trim()
+
+            };
+
+        }
+
+
+        /* =================================================
+           SPONSOR
+           ================================================= */
+
+        else if (type === "sponsor") {
+
+            const expected =
+                numberValue(
+                    $("#recordExpected")?.value
+                );
+
+
+            const received =
+                numberValue(
+                    $("#recordReceived")?.value
+                );
+
+
+            if (
+                expected < 0 ||
+                received < 0
+            ) {
+
+                throw new Error(
+                    "Sponsorship amounts cannot be negative."
+                );
+
+            }
+
+
+            if (received > expected) {
+
+                throw new Error(
+                    "Received sponsorship cannot be greater than expected sponsorship."
+                );
+
+            }
+
+
+            payload = {
+
+                ...payload,
+
+                action:
+                    "addSponsor",
+
+                date:
+                    $("#recordDate").value,
+
+                name:
+                    $("#recordName").value.trim(),
+
+                category:
+                    $("#recordCategory").value.trim(),
+
+                expected,
+
+                received,
+
+                phone:
+                    $("#recordPhone")?.value.trim() ||
+                    "",
+
+                reference:
+                    $("#recordReference")?.value.trim() ||
+                    "",
+
+                paymentMode:
+                    $("#recordPaymentMode")?.value ||
+                    "",
+
+                notes:
+                    $("#recordNotes").value.trim()
+
+            };
+
+        }
+
+
+        /* =================================================
+           DONATION / MATERIAL
+           ================================================= */
+
+        else if (type === "donation") {
+
+            const donationType =
+                $("#recordDonationType")?.value;
+
+
+            const quantity =
+                numberValue(
+                    $("#recordQuantity")?.value
+                );
+
+
+            const amount =
+                numberValue(
+                    $("#recordAmount")?.value
+                );
+
+
+            if (!donationType) {
+
+                throw new Error(
+                    "Please select the donation type."
+                );
+
+            }
+
+
+            if (donationType === "Material") {
+
+                if (
+                    quantity <= 0
+                ) {
+
+                    throw new Error(
+                        "Material donation quantity must be greater than zero."
+                    );
+
+                }
+
+
+                if (
+                    !$("#recordUnit")?.value.trim()
+                ) {
+
+                    throw new Error(
+                        "Please enter the material unit."
+                    );
+
+                }
+
+            }
+            else {
+
+                if (
+                    amount <= 0
+                ) {
+
+                    throw new Error(
+                        "Cash donation amount must be greater than zero."
+                    );
+
+                }
+
+            }
+
+
+            payload = {
+
+                ...payload,
+
+                action:
+                    "addDonation",
+
+                date:
+                    $("#recordDate").value,
+
+                donor:
+                    $("#recordDonor").value.trim(),
+
+                type:
+                    donationType,
+
+                description:
+                    $("#recordDescription").value.trim(),
+
+                quantity:
+                    quantity,
+
+                unit:
+                    $("#recordUnit").value.trim(),
+
                 amount:
                     amount,
 
-                paid:
-                    paid,
+                paymentMode:
+                    $("#recordPaymentMode")?.value ||
+                    "",
 
                 notes:
                     $("#recordNotes").value.trim()
@@ -4316,7 +6928,7 @@ async function submitAdminRecord() {
 
 
         /* =================================================
-           VALIDATION
+           COMMON VALIDATION
            ================================================= */
 
         if (!payload.date) {
@@ -4342,6 +6954,8 @@ async function submitAdminRecord() {
 
         if (
             type !== "income" &&
+            type !== "sponsor" &&
+            type !== "donation" &&
             !payload.description
         ) {
 
@@ -4352,7 +6966,59 @@ async function submitAdminRecord() {
         }
 
 
-        if (!payload.category) {
+        if (
+            type === "sponsor" &&
+            !payload.name
+        ) {
+
+            throw new Error(
+                "Please enter the sponsor name."
+            );
+
+        }
+
+
+        if (
+            type === "sponsor" &&
+            !payload.category
+        ) {
+
+            throw new Error(
+                "Please enter the sponsor category."
+            );
+
+        }
+
+
+        if (
+            type === "donation" &&
+            !payload.donor
+        ) {
+
+            throw new Error(
+                "Please enter the donor name."
+            );
+
+        }
+
+
+        if (
+            type === "donation" &&
+            !payload.description
+        ) {
+
+            throw new Error(
+                "Please enter the donation item or description."
+            );
+
+        }
+
+
+        if (
+            type !== "donation" &&
+            type !== "sponsor" &&
+            !payload.category
+        ) {
 
             throw new Error(
                 "Please enter a category."
@@ -4361,24 +7027,13 @@ async function submitAdminRecord() {
         }
 
 
-        /* =================================================
-           SEND TO GOOGLE APPS SCRIPT
-           ================================================= */
-
         showAdminFormMessage(
             "Saving record..."
         );
 
 
-        const result =
-            await apiPost(
-                payload
-            );
-
-
-        console.log(
-            "Save response:",
-            result
+        await apiPost(
+            payload
         );
 
 
@@ -4387,16 +7042,8 @@ async function submitAdminRecord() {
         );
 
 
-        /* =================================================
-           REFRESH DATA
-           ================================================= */
-
         await loadAllData();
 
-
-        /* =================================================
-           CLOSE AFTER SHORT DELAY
-           ================================================= */
 
         setTimeout(
             () => {
@@ -4441,34 +7088,77 @@ async function submitAdminRecord() {
 
 
 /* =========================================================
-   44. SAVE BUTTON TEXT
+   57. SAVE BUTTON TEXT
    ========================================================= */
 
 function getSaveButtonText(type) {
 
-    if (type === "income") {
-        return "Save Income";
-    }
+    const names = {
 
-    if (type === "expense") {
-        return "Save Expense";
-    }
+        income:
+            "Save Income",
 
-    if (type === "rental") {
-        return "Save Rental";
-    }
+        expense:
+            "Save Expense",
 
-    if (type === "transport") {
-        return "Save Transport";
-    }
+        rental:
+            "Save Rental",
 
-    return "Save";
+        transport:
+            "Save Transport",
+
+        sponsor:
+            "Save Sponsor",
+
+        donation:
+            "Save Donation"
+
+    };
+
+
+    return names[type] ||
+        "Save";
 
 }
 
 
 /* =========================================================
-   45. EDIT RECORD
+   58. FIND COLLECTION
+   ========================================================= */
+
+function getCollection(type) {
+
+    const collections = {
+
+        income:
+            App.data.income,
+
+        expense:
+            App.data.expenses,
+
+        rental:
+            App.data.rentals,
+
+        transport:
+            App.data.transport,
+
+        sponsor:
+            App.data.sponsors,
+
+        donation:
+            App.data.donations
+
+    };
+
+
+    return collections[type] ||
+        null;
+
+}
+
+
+/* =========================================================
+   59. EDIT RECORD
    ========================================================= */
 
 function openEditForm(
@@ -4481,46 +7171,20 @@ function openEditForm(
     }
 
 
-    let collection;
+    const collection =
+        getCollection(type);
 
 
-    if (type === "income") {
-
-        collection =
-            App.data.income;
-
-    }
-    else if (type === "expense") {
-
-        collection =
-            App.data.expenses;
-
-    }
-    else if (type === "rental") {
-
-        collection =
-            App.data.rentals;
-
-    }
-    else if (type === "transport") {
-
-        collection =
-            App.data.transport;
-
-    }
-    else {
-
+    if (!collection) {
         return;
-
     }
 
 
     const item =
         collection.find(
             record =>
-                String(
-                    record.ID
-                ) === String(id)
+                recordId(record) ===
+                String(id)
         );
 
 
@@ -4538,6 +7202,9 @@ function openEditForm(
     App.formType =
         type;
 
+    App.editingId =
+        id;
+
 
     const modal =
         createAdminFormModal();
@@ -4554,13 +7221,17 @@ function openEditForm(
 
     const date =
         normalizeDateForInput(
-            item.Date
+            recordDate(item)
         );
 
 
     let form =
         "";
 
+
+    /* =====================================================
+       INCOME
+       ===================================================== */
 
     if (type === "income") {
 
@@ -4571,22 +7242,10 @@ function openEditForm(
                 class="admin-record-form"
             >
 
-                <div class="admin-form-header">
-
-                    <span>
-                        DUSSEHRA FINANCE
-                    </span>
-
-                    <h2>
-                        Edit Income
-                    </h2>
-
-                    <p>
-                        Update this income record.
-                    </p>
-
-                </div>
-
+                ${formHeader(
+                    "Edit Income",
+                    "Update this income record."
+                )}
 
                 <div class="admin-form-grid">
 
@@ -4603,7 +7262,15 @@ function openEditForm(
                         "Name",
                         "text",
                         true,
-                        item.Name || ""
+                        firstValue(
+                            item,
+                            [
+                                "Name",
+                                "name",
+                                "Contributor"
+                            ],
+                            ""
+                        )
                     )}
 
                     ${formInput(
@@ -4611,7 +7278,14 @@ function openEditForm(
                         "Category",
                         "text",
                         true,
-                        item.Category || ""
+                        firstValue(
+                            item,
+                            [
+                                "Category",
+                                "category"
+                            ],
+                            ""
+                        )
                     )}
 
                     ${formInput(
@@ -4619,7 +7293,15 @@ function openEditForm(
                         "Expected Amount",
                         "number",
                         true,
-                        item.Expected || ""
+                        firstValue(
+                            item,
+                            [
+                                "Expected",
+                                "expected",
+                                "ExpectedAmount"
+                            ],
+                            0
+                        )
                     )}
 
                     ${formInput(
@@ -4627,7 +7309,15 @@ function openEditForm(
                         "Received Amount",
                         "number",
                         true,
-                        item.Received || ""
+                        firstValue(
+                            item,
+                            [
+                                "Received",
+                                "received",
+                                "ReceivedAmount"
+                            ],
+                            0
+                        )
                     )}
 
                     ${formSelect(
@@ -4641,65 +7331,99 @@ function openEditForm(
                             "Other"
                         ],
                         true,
-                        item.PaymentMode || ""
+                        firstValue(
+                            item,
+                            [
+                                "PaymentMode",
+                                "paymentMode",
+                                "PaymentMethod"
+                            ],
+                            ""
+                        )
                     )}
 
                     ${formTextarea(
                         "recordNotes",
                         "Notes",
-                        item.Notes || ""
+                        firstValue(
+                            item,
+                            [
+                                "Notes",
+                                "notes"
+                            ],
+                            ""
+                        )
                     )}
 
                 </div>
 
-
-                <div
-                    id="adminFormMessage"
-                    class="admin-form-message"
-                ></div>
-
-
-                <div class="admin-form-actions">
-
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        id="cancelAdminForm"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="primary-button"
-                    >
-                        Update Income
-                    </button>
-
-                </div>
+                ${formFooter(
+                    "Update Income"
+                )}
 
             </form>
 
         `;
 
     }
-    else {
-
-        const isRental =
-            type === "rental";
 
 
-        const title =
-            isRental
-                ? "Edit Rental"
-                : "Edit Transport";
+    /* =====================================================
+       EXPENSE
+       ===================================================== */
+
+    else if (type === "expense") {
+
+        form = buildSimpleEditForm(
+            "Edit Expense",
+            "Update this expense record.",
+            item,
+            "expense",
+            "Update Expense"
+        );
+
+    }
 
 
-        const saveText =
-            isRental
-                ? "Update Rental"
-                : "Update Transport";
+    /* =====================================================
+       RENTAL
+       ===================================================== */
 
+    else if (type === "rental") {
+
+        form = buildSimpleEditForm(
+            "Edit Rental",
+            "Update this rental record.",
+            item,
+            "rental",
+            "Update Rental"
+        );
+
+    }
+
+
+    /* =====================================================
+       TRANSPORT
+       ===================================================== */
+
+    else if (type === "transport") {
+
+        form = buildSimpleEditForm(
+            "Edit Transport",
+            "Update this transport record.",
+            item,
+            "transport",
+            "Update Transport"
+        );
+
+    }
+
+
+    /* =====================================================
+       SPONSOR
+       ===================================================== */
+
+    else if (type === "sponsor") {
 
         form = `
 
@@ -4708,22 +7432,10 @@ function openEditForm(
                 class="admin-record-form"
             >
 
-                <div class="admin-form-header">
-
-                    <span>
-                        DUSSEHRA FINANCE
-                    </span>
-
-                    <h2>
-                        ${title}
-                    </h2>
-
-                    <p>
-                        Update this record.
-                    </p>
-
-                </div>
-
+                ${formHeader(
+                    "Edit Sponsor",
+                    "Update this sponsor record."
+                )}
 
                 <div class="admin-form-grid">
 
@@ -4736,11 +7448,21 @@ function openEditForm(
                     )}
 
                     ${formInput(
-                        "recordDescription",
-                        "Description",
+                        "recordName",
+                        "Sponsor Name",
                         "text",
                         true,
-                        item.Description || ""
+                        firstValue(
+                            item,
+                            [
+                                "Name",
+                                "name",
+                                "Sponsor",
+                                "sponsor",
+                                "SponsorName"
+                            ],
+                            ""
+                        )
                     )}
 
                     ${formInput(
@@ -4748,58 +7470,296 @@ function openEditForm(
                         "Category",
                         "text",
                         true,
-                        item.Category || ""
+                        firstValue(
+                            item,
+                            [
+                                "Category",
+                                "category"
+                            ],
+                            "Sponsorship"
+                        )
                     )}
 
                     ${formInput(
-                        "recordAmount",
-                        "Total Amount",
+                        "recordExpected",
+                        "Expected Sponsorship",
                         "number",
                         true,
-                        item.Amount || ""
+                        firstValue(
+                            item,
+                            [
+                                "Expected",
+                                "expected",
+                                "ExpectedAmount"
+                            ],
+                            0
+                        )
                     )}
 
                     ${formInput(
-                        "recordPaid",
-                        "Paid Amount",
+                        "recordReceived",
+                        "Received Amount",
                         "number",
                         true,
-                        item.Paid || ""
+                        firstValue(
+                            item,
+                            [
+                                "Received",
+                                "received",
+                                "ReceivedAmount"
+                            ],
+                            0
+                        )
+                    )}
+
+                    ${formInput(
+                        "recordPhone",
+                        "Contact",
+                        "tel",
+                        false,
+                        firstValue(
+                            item,
+                            [
+                                "Phone",
+                                "phone",
+                                "Contact",
+                                "contact"
+                            ],
+                            ""
+                        )
+                    )}
+
+                    ${formInput(
+                        "recordReference",
+                        "Reference",
+                        "text",
+                        false,
+                        firstValue(
+                            item,
+                            [
+                                "Reference",
+                                "reference"
+                            ],
+                            ""
+                        )
+                    )}
+
+                    ${formSelect(
+                        "recordPaymentMode",
+                        "Payment Mode",
+                        [
+                            "Cash",
+                            "UPI",
+                            "Bank Transfer",
+                            "Cheque",
+                            "Other"
+                        ],
+                        false,
+                        firstValue(
+                            item,
+                            [
+                                "PaymentMode",
+                                "paymentMode",
+                                "PaymentMethod"
+                            ],
+                            ""
+                        )
                     )}
 
                     ${formTextarea(
                         "recordNotes",
                         "Notes",
-                        item.Notes || ""
+                        firstValue(
+                            item,
+                            [
+                                "Notes",
+                                "notes"
+                            ],
+                            ""
+                        )
                     )}
 
                 </div>
 
+                ${formFooter(
+                    "Update Sponsor"
+                )}
 
-                <div
-                    id="adminFormMessage"
-                    class="admin-form-message"
-                ></div>
+            </form>
+
+        `;
+
+    }
 
 
-                <div class="admin-form-actions">
+    /* =====================================================
+       DONATION
+       ===================================================== */
 
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        id="cancelAdminForm"
-                    >
-                        Cancel
-                    </button>
+    else if (type === "donation") {
 
-                    <button
-                        type="submit"
-                        class="primary-button"
-                    >
-                        ${saveText}
-                    </button>
+        const material =
+            isMaterialDonation(item);
+
+
+        form = `
+
+            <form
+                id="adminRecordForm"
+                class="admin-record-form"
+            >
+
+                ${formHeader(
+                    "Edit Donation",
+                    "Update this cash or material donation."
+                )}
+
+                <div class="admin-form-grid">
+
+                    ${formInput(
+                        "recordDate",
+                        "Date",
+                        "date",
+                        true,
+                        date
+                    )}
+
+                    ${formInput(
+                        "recordDonor",
+                        "Donor Name",
+                        "text",
+                        true,
+                        firstValue(
+                            item,
+                            [
+                                "Donor",
+                                "donor",
+                                "Name",
+                                "name"
+                            ],
+                            ""
+                        )
+                    )}
+
+                    ${formSelect(
+                        "recordDonationType",
+                        "Donation Type",
+                        [
+                            "Cash",
+                            "Material"
+                        ],
+                        true,
+                        material
+                            ? "Material"
+                            : "Cash"
+                    )}
+
+                    ${formInput(
+                        "recordDescription",
+                        "Item / Description",
+                        "text",
+                        true,
+                        firstValue(
+                            item,
+                            [
+                                "Description",
+                                "description",
+                                "Item",
+                                "item",
+                                "Material",
+                                "material"
+                            ],
+                            ""
+                        )
+                    )}
+
+                    ${formInput(
+                        "recordQuantity",
+                        "Quantity",
+                        "number",
+                        material,
+                        firstValue(
+                            item,
+                            [
+                                "Quantity",
+                                "quantity",
+                                "Qty",
+                                "qty"
+                            ],
+                            0
+                        )
+                    )}
+
+                    ${formInput(
+                        "recordUnit",
+                        "Unit",
+                        "text",
+                        material,
+                        firstValue(
+                            item,
+                            [
+                                "Unit",
+                                "unit"
+                            ],
+                            ""
+                        )
+                    )}
+
+                    ${formInput(
+                        "recordAmount",
+                        "Cash Value",
+                        "number",
+                        !material,
+                        firstValue(
+                            item,
+                            [
+                                "Amount",
+                                "amount"
+                            ],
+                            0
+                        )
+                    )}
+
+                    ${formSelect(
+                        "recordPaymentMode",
+                        "Payment Mode",
+                        [
+                            "Cash",
+                            "UPI",
+                            "Bank Transfer",
+                            "Cheque",
+                            "Other"
+                        ],
+                        false,
+                        firstValue(
+                            item,
+                            [
+                                "PaymentMode",
+                                "paymentMode",
+                                "PaymentMethod"
+                            ],
+                            ""
+                        )
+                    )}
+
+                    ${formTextarea(
+                        "recordNotes",
+                        "Notes",
+                        firstValue(
+                            item,
+                            [
+                                "Notes",
+                                "notes"
+                            ],
+                            ""
+                        )
+                    )}
 
                 </div>
+
+                ${formFooter(
+                    "Update Donation"
+                )}
 
             </form>
 
@@ -4828,11 +7788,164 @@ function openEditForm(
         id
     );
 
+
+    initializeDonationTypeFields();
+
 }
 
 
 /* =========================================================
-   46. EDIT FORM SUBMIT
+   60. SIMPLE EDIT FORM
+   ========================================================= */
+
+function buildSimpleEditForm(
+    title,
+    description,
+    item,
+    type,
+    saveText
+) {
+
+    return `
+
+        <form
+            id="adminRecordForm"
+            class="admin-record-form"
+        >
+
+            ${formHeader(
+                title,
+                description
+            )}
+
+            <div class="admin-form-grid">
+
+                ${formInput(
+                    "recordDate",
+                    "Date",
+                    "date",
+                    true,
+                    normalizeDateForInput(
+                        recordDate(item)
+                    )
+                )}
+
+                ${formInput(
+                    "recordDescription",
+                    "Description",
+                    "text",
+                    true,
+                    firstValue(
+                        item,
+                        [
+                            "Description",
+                            "description"
+                        ],
+                        ""
+                    )
+                )}
+
+                ${formInput(
+                    "recordCategory",
+                    "Category",
+                    "text",
+                    true,
+                    firstValue(
+                        item,
+                        [
+                            "Category",
+                            "category"
+                        ],
+                        ""
+                    )
+                )}
+
+                ${formInput(
+                    "recordAmount",
+                    "Total Amount",
+                    "number",
+                    true,
+                    firstValue(
+                        item,
+                        [
+                            "Amount",
+                            "amount",
+                            "Total",
+                            "total",
+                            "ExpectedRent"
+                        ],
+                        0
+                    )
+                )}
+
+                ${
+                    type === "expense"
+                        ? formSelect(
+                            "recordPaymentMode",
+                            "Payment Mode",
+                            [
+                                "Cash",
+                                "UPI",
+                                "Bank Transfer",
+                                "Cheque",
+                                "Other"
+                            ],
+                            true,
+                            firstValue(
+                                item,
+                                [
+                                    "PaymentMode",
+                                    "paymentMode",
+                                    "PaymentMethod"
+                                ],
+                                ""
+                            )
+                        )
+                        : formInput(
+                            "recordPaid",
+                            "Paid Amount",
+                            "number",
+                            true,
+                            firstValue(
+                                item,
+                                [
+                                    "Paid",
+                                    "paid",
+                                    "ActualPaid"
+                                ],
+                                0
+                            )
+                        )
+                }
+
+                ${formTextarea(
+                    "recordNotes",
+                    "Notes",
+                    firstValue(
+                        item,
+                        [
+                            "Notes",
+                            "notes"
+                        ],
+                        ""
+                    )
+                )}
+
+            </div>
+
+            ${formFooter(
+                saveText
+            )}
+
+        </form>
+
+    `;
+
+}
+
+
+/* =========================================================
+   61. EDIT FORM SUBMIT
    ========================================================= */
 
 function initializeEditRecordForm(
@@ -4889,69 +8002,17 @@ function initializeEditRecordForm(
 
             try {
 
-                let payload = {
-
-                    action:
-                        getUpdateAction(
-                            type
-                        ),
-
-                    token:
-                        App.adminToken,
-
-                    id:
-                        id,
-
-                    date:
-                        $("#recordDate").value,
-
-                    notes:
-                        $("#recordNotes").value.trim()
-
-                };
+                const payload =
+                    buildUpdatePayload(
+                        type,
+                        id
+                    );
 
 
-                if (type === "income") {
-
-                    payload.name =
-                        $("#recordName").value.trim();
-
-                    payload.category =
-                        $("#recordCategory").value.trim();
-
-                    payload.expected =
-                        numberValue(
-                            $("#recordExpected").value
-                        );
-
-                    payload.received =
-                        numberValue(
-                            $("#recordReceived").value
-                        );
-
-                    payload.paymentMode =
-                        $("#recordPaymentMode").value;
-
-                }
-                else {
-
-                    payload.description =
-                        $("#recordDescription").value.trim();
-
-                    payload.category =
-                        $("#recordCategory").value.trim();
-
-                    payload.amount =
-                        numberValue(
-                            $("#recordAmount").value
-                        );
-
-                    payload.paid =
-                        numberValue(
-                            $("#recordPaid").value
-                        );
-
-                }
+                validateUpdatePayload(
+                    type,
+                    payload
+                );
 
 
                 showAdminFormMessage(
@@ -5014,57 +8075,503 @@ function initializeEditRecordForm(
 
 
 /* =========================================================
-   47. UPDATE ACTION
+   62. BUILD UPDATE PAYLOAD
    ========================================================= */
 
-function getUpdateAction(type) {
+function buildUpdatePayload(
+    type,
+    id
+) {
+
+    let payload = {
+
+        action:
+            getUpdateAction(type),
+
+        token:
+            App.adminToken,
+
+        id:
+            id,
+
+        date:
+            $("#recordDate").value,
+
+        notes:
+            $("#recordNotes").value.trim()
+
+    };
+
 
     if (type === "income") {
-        return "updateIncome";
+
+        payload.name =
+            $("#recordName").value.trim();
+
+        payload.category =
+            $("#recordCategory").value.trim();
+
+        payload.expected =
+            numberValue(
+                $("#recordExpected").value
+            );
+
+        payload.received =
+            numberValue(
+                $("#recordReceived").value
+            );
+
+        payload.paymentMode =
+            $("#recordPaymentMode").value;
+
     }
 
-    if (type === "expense") {
-        return "updateExpense";
+
+    else if (
+        type === "expense"
+    ) {
+
+        payload.description =
+            $("#recordDescription").value.trim();
+
+        payload.category =
+            $("#recordCategory").value.trim();
+
+        payload.amount =
+            numberValue(
+                $("#recordAmount").value
+            );
+
+        payload.paymentMode =
+            $("#recordPaymentMode").value;
+
     }
 
-    if (type === "rental") {
-        return "updateRental";
+
+    else if (
+        type === "rental" ||
+        type === "transport"
+    ) {
+
+        payload.description =
+            $("#recordDescription").value.trim();
+
+        payload.category =
+            $("#recordCategory").value.trim();
+
+        payload.amount =
+            numberValue(
+                $("#recordAmount").value
+            );
+
+        payload.paid =
+            numberValue(
+                $("#recordPaid").value
+            );
+
     }
 
-    if (type === "transport") {
-        return "updateTransport";
+
+    else if (
+        type === "sponsor"
+    ) {
+
+        payload.name =
+            $("#recordName").value.trim();
+
+        payload.category =
+            $("#recordCategory").value.trim();
+
+        payload.expected =
+            numberValue(
+                $("#recordExpected").value
+            );
+
+        payload.received =
+            numberValue(
+                $("#recordReceived").value
+            );
+
+        payload.phone =
+            $("#recordPhone")?.value.trim() ||
+            "";
+
+        payload.reference =
+            $("#recordReference")?.value.trim() ||
+            "";
+
+        payload.paymentMode =
+            $("#recordPaymentMode")?.value ||
+            "";
+
     }
 
-    return "";
 
-}
+    else if (
+        type === "donation"
+    ) {
 
+        payload.donor =
+            $("#recordDonor").value.trim();
 
-function getUpdateButtonText(type) {
+        payload.type =
+            $("#recordDonationType").value;
 
-    if (type === "income") {
-        return "Update Income";
+        payload.description =
+            $("#recordDescription").value.trim();
+
+        payload.quantity =
+            numberValue(
+                $("#recordQuantity").value
+            );
+
+        payload.unit =
+            $("#recordUnit").value.trim();
+
+        payload.amount =
+            numberValue(
+                $("#recordAmount").value
+            );
+
+        payload.paymentMode =
+            $("#recordPaymentMode")?.value ||
+            "";
+
     }
 
-    if (type === "expense") {
-        return "Update Expense";
-    }
 
-    if (type === "rental") {
-        return "Update Rental";
-    }
-
-    if (type === "transport") {
-        return "Update Transport";
-    }
-
-    return "Update";
+    return payload;
 
 }
 
 
 /* =========================================================
-   48. DELETE RECORD
+   63. VALIDATE UPDATE
+   ========================================================= */
+
+function validateUpdatePayload(
+    type,
+    payload
+) {
+
+    if (!payload.date) {
+
+        throw new Error(
+            "Please select a date."
+        );
+
+    }
+
+
+    if (
+        type === "income"
+    ) {
+
+        if (!payload.name) {
+
+            throw new Error(
+                "Please enter the income name."
+            );
+
+        }
+
+
+        if (!payload.category) {
+
+            throw new Error(
+                "Please enter the income category."
+            );
+
+        }
+
+
+        if (
+            payload.expected < 0 ||
+            payload.received < 0
+        ) {
+
+            throw new Error(
+                "Income amounts cannot be negative."
+            );
+
+        }
+
+
+        if (
+            payload.received >
+            payload.expected
+        ) {
+
+            throw new Error(
+                "Received amount cannot be greater than expected amount."
+            );
+
+        }
+
+    }
+
+
+    if (
+        type === "expense"
+    ) {
+
+        if (!payload.description) {
+
+            throw new Error(
+                "Please enter the expense description."
+            );
+
+        }
+
+
+        if (!payload.category) {
+
+            throw new Error(
+                "Please enter the expense category."
+            );
+
+        }
+
+
+        if (
+            payload.amount < 0
+        ) {
+
+            throw new Error(
+                "Expense amount cannot be negative."
+            );
+
+        }
+
+    }
+
+
+    if (
+        type === "rental" ||
+        type === "transport"
+    ) {
+
+        if (!payload.description) {
+
+            throw new Error(
+                "Please enter the description."
+            );
+
+        }
+
+
+        if (!payload.category) {
+
+            throw new Error(
+                "Please enter the category."
+            );
+
+        }
+
+
+        if (
+            payload.amount < 0 ||
+            payload.paid < 0
+        ) {
+
+            throw new Error(
+                "Amounts cannot be negative."
+            );
+
+        }
+
+
+        if (
+            payload.paid >
+            payload.amount
+        ) {
+
+            throw new Error(
+                "Paid amount cannot be greater than total amount."
+            );
+
+        }
+
+    }
+
+
+    if (
+        type === "sponsor"
+    ) {
+
+        if (!payload.name) {
+
+            throw new Error(
+                "Please enter the sponsor name."
+            );
+
+        }
+
+
+        if (
+            payload.expected < 0 ||
+            payload.received < 0
+        ) {
+
+            throw new Error(
+                "Sponsorship amounts cannot be negative."
+            );
+
+        }
+
+
+        if (
+            payload.received >
+            payload.expected
+        ) {
+
+            throw new Error(
+                "Received sponsorship cannot be greater than expected sponsorship."
+            );
+
+        }
+
+    }
+
+
+    if (
+        type === "donation"
+    ) {
+
+        if (!payload.donor) {
+
+            throw new Error(
+                "Please enter the donor name."
+            );
+
+        }
+
+
+        if (!payload.description) {
+
+            throw new Error(
+                "Please enter the donation description."
+            );
+
+        }
+
+
+        if (
+            payload.type ===
+            "Material"
+        ) {
+
+            if (
+                payload.quantity <= 0
+            ) {
+
+                throw new Error(
+                    "Material quantity must be greater than zero."
+                );
+
+            }
+
+
+            if (!payload.unit) {
+
+                throw new Error(
+                    "Please enter the material unit."
+                );
+
+            }
+
+        }
+        else {
+
+            if (
+                payload.amount <= 0
+            ) {
+
+                throw new Error(
+                    "Cash donation amount must be greater than zero."
+                );
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   64. UPDATE ACTION
+   ========================================================= */
+
+function getUpdateAction(type) {
+
+    const actions = {
+
+        income:
+            "updateIncome",
+
+        expense:
+            "updateExpense",
+
+        rental:
+            "updateRental",
+
+        transport:
+            "updateTransport",
+
+        sponsor:
+            "updateSponsor",
+
+        donation:
+            "updateDonation"
+
+    };
+
+
+    return actions[type] ||
+        "";
+
+}
+
+
+/* =========================================================
+   65. UPDATE BUTTON TEXT
+   ========================================================= */
+
+function getUpdateButtonText(type) {
+
+    const names = {
+
+        income:
+            "Update Income",
+
+        expense:
+            "Update Expense",
+
+        rental:
+            "Update Rental",
+
+        transport:
+            "Update Transport",
+
+        sponsor:
+            "Update Sponsor",
+
+        donation:
+            "Update Donation"
+
+    };
+
+
+    return names[type] ||
+        "Update";
+
+}
+
+
+/* =========================================================
+   66. DELETE RECORD
    ========================================================= */
 
 async function deleteRecord(
@@ -5083,9 +8590,37 @@ async function deleteRecord(
     }
 
 
+    const labels = {
+
+        income:
+            "income",
+
+        expense:
+            "expense",
+
+        rental:
+            "rental",
+
+        transport:
+            "transport",
+
+        sponsor:
+            "sponsor",
+
+        donation:
+            "donation"
+
+    };
+
+
+    const label =
+        labels[type] ||
+        "record";
+
+
     const confirmed =
         window.confirm(
-            `Are you sure you want to delete ${type} record ${id}?`
+            `Are you sure you want to delete this ${label} record?\n\nID: ${id}`
         );
 
 
@@ -5096,18 +8631,35 @@ async function deleteRecord(
 
     try {
 
+        setConnectionStatus(
+            "Deleting...",
+            "loading"
+        );
+
+
+        const action =
+            getDeleteAction(
+                type
+            );
+
+
+        if (!action) {
+
+            throw new Error(
+                "Delete action is not configured."
+            );
+
+        }
+
+
         await apiPost({
 
-            action:
-                getDeleteAction(
-                    type
-                ),
+            action,
 
             token:
                 App.adminToken,
 
-            id:
-                id
+            id
 
         });
 
@@ -5116,7 +8668,7 @@ async function deleteRecord(
 
 
         alert(
-            "Record deleted successfully."
+            `${capitalize(label)} deleted successfully.`
         );
 
     }
@@ -5133,46 +8685,74 @@ async function deleteRecord(
             "Unable to delete record."
         );
 
+
+        setConnectionStatus(
+            App.isAdmin
+                ? "Admin Mode"
+                : "Connected",
+            "online"
+        );
+
     }
 
 }
 
 
 /* =========================================================
-   49. DELETE ACTION
+   67. DELETE ACTION
    ========================================================= */
 
 function getDeleteAction(type) {
 
-    if (type === "income") {
-        return "deleteIncome";
-    }
+    const actions = {
 
-    if (type === "expense") {
-        return "deleteExpense";
-    }
+        income:
+            "deleteIncome",
 
-    if (type === "rental") {
-        return "deleteRental";
-    }
+        expense:
+            "deleteExpense",
 
-    if (type === "transport") {
-        return "deleteTransport";
-    }
+        rental:
+            "deleteRental",
 
-    return "";
+        transport:
+            "deleteTransport",
+
+        sponsor:
+            "deleteSponsor",
+
+        donation:
+            "deleteDonation"
+
+    };
+
+
+    return actions[type] ||
+        "";
 
 }
 
 
 /* =========================================================
-   50. RECORD ACTION BUTTONS
+   68. RECORD ACTION BUTTONS
    ========================================================= */
 
 function initializeRecordActions() {
 
     $$(".edit-record-button")
         .forEach(button => {
+
+            if (
+                button.dataset.dfBound ===
+                "true"
+            ) {
+                return;
+            }
+
+
+            button.dataset.dfBound =
+                "true";
+
 
             button.addEventListener(
                 "click",
@@ -5192,6 +8772,18 @@ function initializeRecordActions() {
     $$(".delete-record-button")
         .forEach(button => {
 
+            if (
+                button.dataset.dfBound ===
+                "true"
+            ) {
+                return;
+            }
+
+
+            button.dataset.dfBound =
+                "true";
+
+
             button.addEventListener(
                 "click",
                 function () {
@@ -5210,92 +8802,64 @@ function initializeRecordActions() {
 
 
 /* =========================================================
-   51. DATE NORMALIZER
+   69. CAPITALIZE
    ========================================================= */
 
-function normalizeDateForInput(
-    value
-) {
+function capitalize(value) {
 
-    if (!value) {
-        return todayForInput();
-    }
+    const text =
+        String(value || "");
 
 
-    const date =
-        new Date(value);
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        if (
-            /^\d{4}-\d{2}-\d{2}$/.test(
-                String(value)
-            )
-        ) {
-
-            return String(value);
-
-        }
-
-
-        return todayForInput();
-
-    }
-
-
-    return [
-
-        date.getFullYear(),
-
-        String(
-            date.getMonth() + 1
-        ).padStart(2, "0"),
-
-        String(
-            date.getDate()
-        ).padStart(2, "0")
-
-    ].join("-");
+    return text.charAt(0).toUpperCase() +
+        text.slice(1);
 
 }
 
 
 /* =========================================================
-   52. AUTO REFRESH
+   70. AUTO REFRESH
    ========================================================= */
 
 function initializeAutoRefresh() {
 
-    setInterval(
-        async function () {
+    if (App.refreshTimer) {
 
-            if (
-                document.hidden ||
-                App.loading ||
-                $("#adminFormModal")?.classList.contains("open")
-            ) {
+        clearInterval(
+            App.refreshTimer
+        );
 
-                return;
-
-            }
+    }
 
 
-            await loadAllData();
+    App.refreshTimer =
+        setInterval(
+            async function () {
 
-        },
-        CONFIG.REFRESH_INTERVAL
-    );
+                if (
+                    document.hidden ||
+                    App.loading ||
+                    $("#adminFormModal")
+                        ?.classList
+                        .contains("open")
+                ) {
+
+                    return;
+
+                }
+
+
+                await loadAllData();
+
+            },
+            CONFIG.REFRESH_INTERVAL
+        );
 
 }
 
 
 /* =========================================================
-   53. ESCAPE ADMIN FORM
+   71. ESCAPE / GLOBAL KEYBOARD
    ========================================================= */
 
 function initializeGlobalEscape() {
@@ -5324,6 +8888,24 @@ function initializeGlobalEscape() {
 
                 closeAdminFormModal();
 
+                return;
+
+            }
+
+
+            const loginModal =
+                $("#loginModal");
+
+
+            if (
+                loginModal &&
+                loginModal.classList.contains(
+                    "open"
+                )
+            ) {
+
+                closeLoginModal();
+
             }
 
         }
@@ -5333,7 +8915,35 @@ function initializeGlobalEscape() {
 
 
 /* =========================================================
-   54. START APPLICATION
+   72. PAGE VISIBILITY
+   ========================================================= */
+
+function initializeVisibilityRefresh() {
+
+    document.addEventListener(
+        "visibilitychange",
+        async function () {
+
+            if (
+                !document.hidden &&
+                !App.loading &&
+                !$("#adminFormModal")
+                    ?.classList
+                    .contains("open")
+            ) {
+
+                await loadAllData();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   73. INITIALIZE APP
    ========================================================= */
 
 async function initializeApp() {
@@ -5347,6 +8957,8 @@ async function initializeApp() {
     initializeAddButtons();
 
     initializeGlobalEscape();
+
+    initializeVisibilityRefresh();
 
     restoreAdminSession();
 
@@ -5362,7 +8974,7 @@ async function initializeApp() {
 
 
 /* =========================================================
-   55. DOM READY
+   74. DOM READY
    ========================================================= */
 
 document.addEventListener(
