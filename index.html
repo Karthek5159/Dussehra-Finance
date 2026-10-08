@@ -1353,63 +1353,533 @@
 
         </section>
 
+<!-- =========================================================
+     REPORTS PAGE
+     ========================================================= -->
+<section
+    id="reportsPage"
+    class="page-section"
+>
+    <div class="page-heading">
+        <div>
+            <span class="section-label">DUSSEHRA FINANCE</span>
+            <h2>Financial Reports</h2>
+            <p>
+                Complete financial overview and festival
+                spending analysis.
+            </p>
+        </div>
 
-        <!-- =============================================
-             REPORTS
-             ============================================= -->
+        <div class="reports-actions">
+            <button
+                type="button"
+                class="secondary-button"
+                id="printReportButton"
+            >
+                🖨 Print Report
+            </button>
+        </div>
+    </div>
 
-        <section
-            id="reportsPage"
-            class="page-section"
-        >
 
-            <div class="page-heading">
+    <!-- =====================================================
+         FINANCIAL OVERVIEW
+         ===================================================== -->
+    <div class="reports-section">
 
-                <div>
+        <div class="reports-section-heading">
+            <div>
+                <span class="section-label">FINANCIAL OVERVIEW</span>
+                <h3>Festival Summary</h3>
+            </div>
+        </div>
 
-                    <span class="section-label">
-                        DUSSEHRA FINANCE
-                    </span>
+        <div class="reports-summary-grid">
 
-                    <h2>
-                        Reports
-                    </h2>
+            <div class="report-summary-card">
+                <span>Total Expected Income</span>
+                <strong id="reportTotalExpectedIncome">
+                    ₹0.00
+                </strong>
+                <small>
+                    Total income expected
+                </small>
+            </div>
 
-                    <p>
-                        View a complete financial summary
-                        of the festival.
-                    </p>
+            <div class="report-summary-card">
+                <span>Total Received Income</span>
+                <strong id="reportTotalReceivedIncome">
+                    ₹0.00
+                </strong>
+                <small>
+                    Amount actually received
+                </small>
+            </div>
 
+            <div class="report-summary-card">
+                <span>Pending Income</span>
+                <strong id="reportPendingIncome">
+                    ₹0.00
+                </strong>
+                <small>
+                    Amount still pending
+                </small>
+            </div>
+
+            <div class="report-summary-card">
+                <span>Total Outgoing</span>
+                <strong id="reportTotalOutgoing">
+                    ₹0.00
+                </strong>
+                <small>
+                    Expenses + Rentals + Transport
+                </small>
+            </div>
+
+            <div class="report-summary-card highlight-card">
+                <span>Cash Balance</span>
+                <strong id="reportCashBalance">
+                    ₹0.00
+                </strong>
+                <small>
+                    Received income − outgoing
+                </small>
+            </div>
+
+            <div class="report-summary-card">
+                <span>Total Budget</span>
+                <strong id="reportTotalBudget">
+                    ₹0.00
+                </strong>
+                <small>
+                    Festival planned budget
+                </small>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         INCOME ANALYSIS
+         ===================================================== -->
+    <div class="reports-section">
+
+        <div class="reports-section-heading">
+            <div>
+                <span class="section-label">INCOME ANALYSIS</span>
+                <h3>Income Sources</h3>
+            </div>
+        </div>
+
+        <div class="report-analysis-grid">
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+                    <div>
+                        <span class="section-label">
+                            INCOME BREAKDOWN
+                        </span>
+                        <h4>By Category</h4>
+                    </div>
+                </div>
+
+                <div
+                    id="reportIncomeCategories"
+                    class="report-category-list"
+                >
+                    <div class="report-empty">
+                        No income data available.
+                    </div>
                 </div>
 
             </div>
 
 
-            <div class="dashboard-card">
+            <div class="report-card">
 
-                <div class="empty-state">
+                <div class="report-card-header">
+                    <div>
+                        <span class="section-label">
+                            COLLECTION STATUS
+                        </span>
+                        <h4>Received vs Pending</h4>
+                    </div>
+                </div>
 
-                    <div class="empty-icon">
-                        ◈
+                <div class="report-status-list">
+
+                    <div class="report-status-row">
+                        <span>Received Income</span>
+                        <strong
+                            id="reportReceivedIncomeStatus"
+                        >
+                            ₹0.00
+                        </strong>
                     </div>
 
-                    <h4>
-                        Reports
-                    </h4>
+                    <div class="report-status-row">
+                        <span>Pending Income</span>
+                        <strong
+                            id="reportPendingIncomeStatus"
+                        >
+                            ₹0.00
+                        </strong>
+                    </div>
 
-                    <p>
-                        Detailed financial reports will
-                        appear here.
-                    </p>
+                    <div class="report-status-row total-row">
+                        <span>Total Expected</span>
+                        <strong
+                            id="reportExpectedIncomeStatus"
+                        >
+                            ₹0.00
+                        </strong>
+                    </div>
 
                 </div>
 
             </div>
 
-        </section>
+        </div>
 
-    </main>
+    </div>
 
+
+    <!-- =====================================================
+         OUTGOING ANALYSIS
+         ===================================================== -->
+    <div class="reports-section">
+
+        <div class="reports-section-heading">
+            <div>
+                <span class="section-label">OUTGOING ANALYSIS</span>
+                <h3>Festival Spending</h3>
+            </div>
+        </div>
+
+        <div class="report-analysis-grid">
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+                    <div>
+                        <span class="section-label">
+                            OUTGOING BREAKDOWN
+                        </span>
+                        <h4>By Module</h4>
+                    </div>
+                </div>
+
+                <div class="report-outgoing-list">
+
+                    <div class="report-outgoing-row">
+                        <div>
+                            <span>Expenses</span>
+                            <small>
+                                Festival expenses
+                            </small>
+                        </div>
+
+                        <strong id="reportExpensesTotal">
+                            ₹0.00
+                        </strong>
+                    </div>
+
+                    <div class="report-outgoing-row">
+                        <div>
+                            <span>Rentals</span>
+                            <small>
+                                Equipment and vessel rentals
+                            </small>
+                        </div>
+
+                        <strong id="reportRentalsTotal">
+                            ₹0.00
+                        </strong>
+                    </div>
+
+                    <div class="report-outgoing-row">
+                        <div>
+                            <span>Transport</span>
+                            <small>
+                                Transportation charges
+                            </small>
+                        </div>
+
+                        <strong id="reportTransportTotal">
+                            ₹0.00
+                        </strong>
+                    </div>
+
+                    <div class="report-outgoing-row total-row">
+                        <div>
+                            <span>Total Outgoing</span>
+                            <small>
+                                All festival spending
+                            </small>
+                        </div>
+
+                        <strong id="reportOutgoingTotal">
+                            ₹0.00
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+                    <div>
+                        <span class="section-label">
+                            BUDGET POSITION
+                        </span>
+                        <h4>Budget vs Spending</h4>
+                    </div>
+                </div>
+
+                <div class="report-status-list">
+
+                    <div class="report-status-row">
+                        <span>Total Budget</span>
+                        <strong id="reportBudgetPosition">
+                            ₹0.00
+                        </strong>
+                    </div>
+
+                    <div class="report-status-row">
+                        <span>Total Spent</span>
+                        <strong id="reportSpentPosition">
+                            ₹0.00
+                        </strong>
+                    </div>
+
+                    <div class="report-status-row total-row">
+                        <span>Budget Remaining</span>
+                        <strong id="reportBudgetRemaining">
+                            ₹0.00
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CATEGORY BREAKDOWN
+         ===================================================== -->
+    <div class="reports-section">
+
+        <div class="reports-section-heading">
+            <div>
+                <span class="section-label">CATEGORY ANALYSIS</span>
+                <h3>Spending Categories</h3>
+            </div>
+        </div>
+
+        <div class="report-category-grid">
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+                    <div>
+                        <span class="section-label">
+                            EXPENSES
+                        </span>
+                        <h4>Expense Categories</h4>
+                    </div>
+                </div>
+
+                <div
+                    id="reportExpenseCategories"
+                    class="report-category-list"
+                >
+                    <div class="report-empty">
+                        No expense data available.
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+                    <div>
+                        <span class="section-label">
+                            RENTALS
+                        </span>
+                        <h4>Rental Categories</h4>
+                    </div>
+                </div>
+
+                <div
+                    id="reportRentalCategories"
+                    class="report-category-list"
+                >
+                    <div class="report-empty">
+                        No rental data available.
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="report-card">
+
+                <div class="report-card-header">
+                    <div>
+                        <span class="section-label">
+                            TRANSPORT
+                        </span>
+                        <h4>Transport Categories</h4>
+                    </div>
+                </div>
+
+                <div
+                    id="reportTransportCategories"
+                    class="report-category-list"
+                >
+                    <div class="report-empty">
+                        No transport data available.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         10-DAY FESTIVAL EXPENSE TREND
+         ===================================================== -->
+    <div class="reports-section">
+
+        <div class="reports-section-heading">
+            <div>
+                <span class="section-label">
+                    FESTIVAL TREND
+                </span>
+
+                <h3>10-Day Expense Trend</h3>
+
+                <p>
+                    Daily outgoing amount during the
+                    Dussehra festival.
+                </p>
+            </div>
+        </div>
+
+        <div class="report-card report-trend-card">
+
+            <div
+                id="reportExpenseTrend"
+                class="report-trend-list"
+            >
+                <!-- JavaScript renders Day 1–Day 10 -->
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MATERIAL DONATIONS
+         ===================================================== -->
+    <div class="reports-section">
+
+        <div class="reports-section-heading">
+            <div>
+                <span class="section-label">
+                    MATERIAL DONATIONS
+                </span>
+
+                <h3>Physical Contributions</h3>
+
+                <p>
+                    Material donations are tracked by
+                    quantity only and do not affect
+                    cash balance.
+                </p>
+            </div>
+        </div>
+
+        <div class="report-material-grid">
+
+            <div class="report-material-card">
+                <span>Rice</span>
+
+                <strong id="reportRiceQuantity">
+                    0
+                </strong>
+
+                <small>Bags</small>
+            </div>
+
+            <div class="report-material-card">
+                <span>Vegetables</span>
+
+                <strong id="reportVegetablesQuantity">
+                    0
+                </strong>
+
+                <small>Kg</small>
+            </div>
+
+            <div class="report-material-card">
+                <span>Oil</span>
+
+                <strong id="reportOilQuantity">
+                    0
+                </strong>
+
+                <small>Litres</small>
+            </div>
+
+            <div class="report-material-card">
+                <span>Other Materials</span>
+
+                <strong id="reportOtherQuantity">
+                    0
+                </strong>
+
+                <small>Items</small>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         REPORT FOOTNOTE
+         ===================================================== -->
+    <div class="report-note">
+
+        <strong>Report Note</strong>
+
+        <span>
+            This report is generated from the current
+            festival finance records. Material donations
+            are intentionally excluded from monetary
+            calculations.
+        </span>
+
+    </div>
+
+</section>
 
     <!-- =================================================
          FOOTER
@@ -2675,7 +3145,7 @@
      JAVASCRIPT
      ===================================================== -->
 
-<script src="js/App.js"></script>
+<script src="js/app.js"></script>
 
 
 </body>
