@@ -3010,3 +3010,1387 @@ textarea:focus-visible {
             none !important;
     }
 }
+
+
+/* =========================================================
+   28. NEW VERSION — SPONSORS
+   Cash Sponsorship Management
+   ========================================================= */
+
+.sponsor-summary,
+.donation-summary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-bottom: 18px;
+}
+
+
+/* ---------------------------------------------------------
+   SPONSOR SUMMARY CARD
+   --------------------------------------------------------- */
+
+.sponsor-summary-card,
+.donation-summary-card {
+
+    min-height: 105px;
+
+    padding: 18px;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius:
+        var(--df-radius-small);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.05),
+            rgba(255, 255, 255, 0.02)
+        );
+
+    box-shadow:
+        var(--df-shadow-soft);
+}
+
+.sponsor-summary-card span,
+.donation-summary-card span {
+
+    display: block;
+
+    color:
+        var(--df-muted);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.09em;
+
+    text-transform: uppercase;
+}
+
+.sponsor-summary-card strong,
+.donation-summary-card strong {
+
+    display: block;
+
+    margin-top: 8px;
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 24px;
+
+    line-height: 1.2;
+
+    font-weight: 800;
+}
+
+.sponsor-summary-card small,
+.donation-summary-card small {
+
+    display: block;
+
+    margin-top: 5px;
+
+    color:
+        var(--df-muted);
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   29. SPONSOR MODULE
+   ========================================================= */
+
+.sponsor-page,
+.donation-page {
+
+    width: 100%;
+}
+
+.sponsor-page .data-card,
+.donation-page .data-card {
+
+    width: 100%;
+
+    overflow: hidden;
+}
+
+
+/* ---------------------------------------------------------
+   SPONSOR TABLE
+   --------------------------------------------------------- */
+
+#sponsorTable table {
+
+    min-width: 900px;
+}
+
+#sponsorTable th,
+#sponsorTable td {
+
+    white-space: nowrap;
+}
+
+#sponsorTable td:nth-child(3),
+#sponsorTable td:nth-child(4) {
+
+    color:
+        var(--df-gold-light);
+
+    font-weight: 700;
+}
+
+#sponsorTable td:last-child {
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   30. DONATIONS & MATERIALS
+   Quantity Only — No Monetary Value
+   ========================================================= */
+
+.material-donation-dashboard {
+
+    width: 100%;
+
+    margin-top: 18px;
+}
+
+
+/* ---------------------------------------------------------
+   MATERIAL SUMMARY GRID
+   --------------------------------------------------------- */
+
+.material-summary-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+
+    margin-bottom: 18px;
+}
+
+
+/* ---------------------------------------------------------
+   MATERIAL SUMMARY ITEM
+   --------------------------------------------------------- */
+
+.material-summary-item {
+
+    position: relative;
+
+    min-height: 105px;
+
+    padding: 17px;
+
+    overflow: hidden;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius:
+        var(--df-radius-small);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(101, 18, 27, 0.20),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    box-shadow:
+        var(--df-shadow-soft);
+
+    transition:
+        transform var(--df-transition),
+        border-color var(--df-transition);
+}
+
+.material-summary-item::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--df-gold),
+            transparent
+        );
+
+    opacity: 0.65;
+}
+
+.material-summary-item:hover {
+
+    transform:
+        translateY(-2px);
+
+    border-color:
+        var(--df-border);
+}
+
+
+/* ---------------------------------------------------------
+   MATERIAL NAME
+   --------------------------------------------------------- */
+
+.material-summary-item span {
+
+    display: block;
+
+    color:
+        var(--df-muted);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.1em;
+
+    text-transform: uppercase;
+}
+
+
+/* ---------------------------------------------------------
+   MATERIAL QUANTITY
+   --------------------------------------------------------- */
+
+.material-summary-item strong {
+
+    display: block;
+
+    margin-top: 9px;
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 23px;
+
+    font-weight: 800;
+
+    line-height: 1.1;
+}
+
+
+/* ---------------------------------------------------------
+   MATERIAL UNIT
+   --------------------------------------------------------- */
+
+.material-summary-item small {
+
+    display: block;
+
+    margin-top: 5px;
+
+    color:
+        var(--df-white-soft);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   31. RECENT MATERIAL DONATIONS
+   ========================================================= */
+
+.recent-material-donations {
+
+    width: 100%;
+}
+
+.material-donation-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0;
+
+    width: 100%;
+}
+
+.material-donation-row {
+
+    display: grid;
+
+    grid-template-columns:
+        110px
+        minmax(150px, 1fr)
+        minmax(120px, 1fr)
+        120px
+        100px;
+
+    align-items: center;
+
+    gap: 15px;
+
+    min-height: 62px;
+
+    padding:
+        11px 4px;
+
+    border-bottom:
+        1px solid var(--df-border-soft);
+}
+
+.material-donation-row:last-child {
+    border-bottom: 0;
+}
+
+
+/* ---------------------------------------------------------
+   DONATION DATE
+   --------------------------------------------------------- */
+
+.material-donation-date {
+
+    color:
+        var(--df-muted);
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   DONOR
+   --------------------------------------------------------- */
+
+.material-donation-donor {
+
+    color:
+        var(--df-white);
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+/* ---------------------------------------------------------
+   MATERIAL
+   --------------------------------------------------------- */
+
+.material-donation-material {
+
+    color:
+        var(--df-white-soft);
+
+    font-size: 12px;
+}
+
+
+/* ---------------------------------------------------------
+   QUANTITY
+   --------------------------------------------------------- */
+
+.material-donation-quantity {
+
+    color:
+        var(--df-gold-light);
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   UNIT
+   --------------------------------------------------------- */
+
+.material-donation-unit {
+
+    color:
+        var(--df-muted);
+
+    font-size: 11px;
+
+    text-align: right;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   32. DONATION TABLE
+   ========================================================= */
+
+#donationTable table {
+
+    min-width: 900px;
+}
+
+#donationTable th,
+#donationTable td {
+
+    white-space: nowrap;
+}
+
+#donationTable td:nth-child(4) {
+
+    color:
+        var(--df-gold-light);
+
+    font-weight: 800;
+}
+
+#donationTable td:nth-child(5) {
+
+    color:
+        var(--df-white-soft);
+}
+
+#donationTable td:last-child {
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   33. DONATION QUANTITY BADGE
+   ========================================================= */
+
+.quantity-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 72px;
+
+    padding:
+        5px 10px;
+
+    border:
+        1px solid rgba(212, 175, 55, 0.25);
+
+    border-radius:
+        999px;
+
+    color:
+        var(--df-gold-light);
+
+    background:
+        rgba(212, 175, 55, 0.07);
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   34. MATERIAL DONATION EMPTY STATE
+   ========================================================= */
+
+.material-donation-empty {
+
+    min-height: 145px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 25px;
+
+    border:
+        1px dashed rgba(212, 175, 55, 0.20);
+
+    border-radius: 11px;
+
+    color:
+        var(--df-muted);
+
+    background:
+        rgba(0, 0, 0, 0.12);
+
+    text-align: center;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   35. ADMIN RECORD ACTIONS
+   ========================================================= */
+
+.admin-record-actions {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 7px;
+}
+
+.admin-action-button {
+
+    min-width: 34px;
+    min-height: 32px;
+
+    padding:
+        0 9px;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius: 7px;
+
+    color:
+        var(--df-white-soft);
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    transition:
+        color var(--df-transition),
+        border-color var(--df-transition),
+        background var(--df-transition),
+        transform var(--df-transition);
+}
+
+.admin-action-button:hover {
+
+    transform:
+        translateY(-1px);
+
+    color:
+        var(--df-gold-light);
+
+    border-color:
+        var(--df-border);
+
+    background:
+        rgba(101, 18, 27, 0.25);
+}
+
+.admin-action-button.delete-record-button:hover {
+
+    color:
+        #e6b5a8;
+
+    border-color:
+        rgba(143, 38, 49, 0.55);
+
+    background:
+        rgba(101, 18, 27, 0.30);
+}
+
+
+/* =========================================================
+   36. NEW VERSION — QUICK ACCESS
+   Sponsors + Donations
+   ========================================================= */
+
+.quick-access .quick-button[data-page="sponsors"],
+.quick-access .quick-button[data-page="donations"] {
+
+    border-color:
+        rgba(212, 175, 55, 0.15);
+}
+
+.quick-access .quick-button[data-page="sponsors"]:hover,
+.quick-access .quick-button[data-page="donations"]:hover {
+
+    border-color:
+        var(--df-border);
+
+    background:
+        rgba(101, 18, 27, 0.22);
+}
+
+
+/* =========================================================
+   37. MATERIAL DASHBOARD CARD
+   ========================================================= */
+
+.material-dashboard-card {
+
+    width: 100%;
+
+    margin-top: 18px;
+
+    padding: 23px;
+
+    border:
+        1px solid var(--df-border-soft);
+
+    border-radius:
+        var(--df-radius);
+
+    background:
+        var(--df-glass);
+
+    box-shadow:
+        var(--df-shadow-soft);
+
+    backdrop-filter:
+        blur(15px);
+
+    -webkit-backdrop-filter:
+        blur(15px);
+}
+
+.material-dashboard-card .card-heading {
+
+    margin-bottom: 17px;
+}
+
+
+/* =========================================================
+   38. DONATION FORM
+   ========================================================= */
+
+.donation-form .form-grid {
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+}
+
+.donation-form .quantity-field {
+
+    position: relative;
+}
+
+.donation-form .quantity-field input {
+
+    font-variant-numeric:
+        tabular-nums;
+}
+
+.donation-form .unit-field select {
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   39. SPONSOR FORM
+   ========================================================= */
+
+.sponsor-form .form-grid {
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+}
+
+
+/* =========================================================
+   40. MODULE ACTION BAR
+   ========================================================= */
+
+.module-action-bar {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 18px;
+
+    margin-bottom: 18px;
+}
+
+.module-action-bar > div {
+
+    min-width: 0;
+}
+
+.module-action-bar .primary-button {
+
+    flex:
+        0 0 auto;
+}
+
+
+/* =========================================================
+   41. MATERIAL DONATION NOTE
+   ========================================================= */
+
+.material-donation-note {
+
+    margin-top: 12px;
+
+    padding:
+        11px 13px;
+
+    border-left:
+        2px solid var(--df-gold-dark);
+
+    color:
+        var(--df-muted);
+
+    background:
+        rgba(212, 175, 55, 0.035);
+
+    font-size: 11px;
+
+    line-height: 1.5;
+}
+
+.material-donation-note strong {
+
+    color:
+        var(--df-gold-light);
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   42. RESPONSIVE — NEW MODULES TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .material-summary-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .sponsor-summary,
+    .donation-summary {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .material-donation-row {
+
+        grid-template-columns:
+            95px
+            minmax(130px, 1fr)
+            minmax(100px, 1fr)
+            100px
+            75px;
+
+        gap: 10px;
+    }
+}
+
+
+/* =========================================================
+   43. RESPONSIVE — NEW MODULES MOBILE
+   ========================================================= */
+
+@media (max-width: 680px) {
+
+    .module-action-bar {
+
+        align-items: stretch;
+
+        flex-direction: column;
+
+        gap: 12px;
+    }
+
+    .module-action-bar .primary-button {
+
+        width: 100%;
+    }
+
+
+    /* Sponsor / donation summaries */
+
+    .sponsor-summary,
+    .donation-summary {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    /* Material summary */
+
+    .material-summary-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 9px;
+    }
+
+    .material-summary-item {
+
+        min-height: 94px;
+
+        padding: 14px;
+    }
+
+    .material-summary-item strong {
+
+        font-size: 20px;
+    }
+
+    .material-summary-item span {
+
+        font-size: 9px;
+    }
+
+    .material-summary-item small {
+
+        font-size: 10px;
+    }
+
+
+    /* Material recent list */
+
+    .material-donation-row {
+
+        grid-template-columns:
+            1fr
+            1fr;
+
+        gap: 7px 12px;
+
+        padding:
+            14px 4px;
+    }
+
+    .material-donation-date {
+
+        grid-column:
+            1 / -1;
+
+        font-size: 10px;
+    }
+
+    .material-donation-donor {
+
+        grid-column:
+            1 / -1;
+
+        font-size: 13px;
+    }
+
+    .material-donation-material {
+
+        grid-column:
+            1;
+
+        font-size: 11px;
+    }
+
+    .material-donation-quantity {
+
+        grid-column:
+            2;
+
+        text-align: right;
+
+        font-size: 12px;
+    }
+
+    .material-donation-unit {
+
+        grid-column:
+            2;
+
+        text-align: right;
+
+        font-size: 10px;
+    }
+
+
+    /* Dashboard material card */
+
+    .material-dashboard-card {
+
+        padding: 18px;
+    }
+
+
+    /* Donation forms */
+
+    .donation-form .form-grid,
+    .sponsor-form .form-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .donation-form .form-group-full,
+    .sponsor-form .form-group-full {
+
+        grid-column:
+            auto;
+    }
+
+
+    /* Admin actions */
+
+    .admin-record-actions {
+
+        gap: 5px;
+    }
+
+    .admin-action-button {
+
+        min-width: 32px;
+
+        padding:
+            0 7px;
+
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   44. VERY SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 390px) {
+
+    .material-summary-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .material-summary-item {
+
+        min-height: 86px;
+    }
+
+    .material-summary-item strong {
+
+        font-size: 21px;
+    }
+
+    .material-donation-row {
+
+        gap: 6px 10px;
+    }
+
+    .quantity-badge {
+
+        min-width: 60px;
+
+        padding:
+            4px 8px;
+
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   45. UNIFIED FINANCE WORKFLOW
+   Applied to income, sponsorships, donations, expenses,
+   rentals and transport entry forms.
+   ========================================================= */
+
+/* The form header is a sibling of the form in the supplied markup,
+   so scope it to the modal rather than the form itself. */
+.finance-form-modal .modal-header {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin: 0 0 24px;
+    padding: 0 42px 20px 0;
+    border-bottom: 1px solid var(--df-border-soft);
+}
+
+.finance-form-modal .modal-header h2 {
+    margin: 4px 0 0;
+    color: var(--df-white);
+    font-size: clamp(24px, 3vw, 30px);
+    font-weight: 750;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.finance-form-modal .modal-header p {
+    max-width: 54ch;
+    margin: 8px 0 0;
+    color: var(--df-muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.income-modal-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+}
+
+.income-modal-title {
+    min-width: 0;
+}
+
+.income-modal-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(212, 175, 55, 0.38);
+    border-radius: 12px;
+    color: var(--df-gold-light);
+    background: linear-gradient(145deg, rgba(143, 38, 49, 0.62), rgba(36, 9, 13, 0.78));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 22px rgba(0, 0, 0, 0.2);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* Keep every finance form on the same two-column rhythm. */
+.finance-form .form-grid,
+.finance-form .income-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+    width: 100%;
+}
+
+.finance-form .form-group {
+    position: relative;
+    min-width: 0;
+}
+
+.finance-form .form-group label {
+    color: var(--df-white-soft);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+}
+
+.finance-form .form-group input,
+.finance-form .form-group select,
+.finance-form .form-group textarea {
+    color: var(--df-white);
+    background-color: rgba(255, 255, 255, 0.055);
+}
+
+.finance-form .form-group input:hover,
+.finance-form .form-group select:hover,
+.finance-form .form-group textarea:hover {
+    border-color: rgba(212, 175, 55, 0.32);
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.finance-form .form-group input:focus,
+.finance-form .form-group select:focus,
+.finance-form .form-group textarea:focus {
+    border-color: var(--df-gold);
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.13);
+}
+
+.finance-form .form-group textarea {
+    min-height: 112px;
+}
+
+.finance-form .form-actions {
+    margin-top: 6px;
+    padding-top: 20px;
+}
+
+.finance-form .form-actions .primary-button {
+    min-width: 150px;
+    border: 1px solid var(--df-gold-dark);
+    box-shadow: 0 8px 20px rgba(101, 18, 27, 0.28);
+}
+
+.finance-form .form-actions .secondary-button {
+    border-color: var(--df-border-soft);
+    color: var(--df-white-soft);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.finance-form .form-actions .secondary-button:hover {
+    border-color: rgba(212, 175, 55, 0.35);
+    color: var(--df-white);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* Dynamically rendered sponsor and material-donation forms inherit
+   the same layout even when their module-specific classes are present. */
+.sponsor-form .form-grid,
+.donation-form .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 680px) {
+    .finance-form-modal .modal-header {
+        margin-bottom: 20px;
+        padding-bottom: 17px;
+    }
+
+    .finance-form .form-grid,
+    .finance-form .income-form-grid,
+    .sponsor-form .form-grid,
+    .donation-form .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .finance-form .form-group-full {
+        grid-column: auto;
+    }
+}
+
+/* =========================================================
+   46. LIVE ADMIN FORM MODAL
+   The JavaScript creates this modal for income, expenses,
+   rentals, transport, sponsors, donations and record edits.
+   ========================================================= */
+
+#adminFormModal {
+    z-index: 1200;
+}
+
+/* The dynamic modal places its dialog inside the overlay. Turning the
+   overlay into a grid centres the dialog instead of pinning it top-left. */
+#adminFormModal .modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+#adminFormModal .admin-form-modal-box {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 100%);
+    max-height: min(820px, calc(100vh - 40px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 32px;
+    border: 1px solid var(--df-border);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(42, 12, 16, 0.99), rgba(11, 7, 8, 0.99));
+    box-shadow: 0 28px 88px rgba(0, 0, 0, 0.7);
+}
+
+#adminFormModal .admin-form-header {
+    margin: 0 0 24px;
+    padding: 0 42px 20px 0;
+    border-bottom: 1px solid var(--df-border-soft);
+}
+
+#adminFormModal .admin-form-header > span {
+    display: block;
+    color: var(--df-gold-light);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+#adminFormModal .admin-form-header h2 {
+    margin: 5px 0 0;
+    color: var(--df-white);
+    font-size: clamp(24px, 3vw, 30px);
+    font-weight: 750;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+#adminFormModal .admin-form-header p {
+    max-width: 54ch;
+    margin: 8px 0 0;
+    color: var(--df-muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+#adminFormModal .admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+}
+
+#adminFormModal .admin-form-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+#adminFormModal .admin-form-full {
+    grid-column: 1 / -1;
+}
+
+#adminFormModal .admin-form-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--df-white-soft);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+}
+
+#adminFormModal .admin-form-field input,
+#adminFormModal .admin-form-field select,
+#adminFormModal .admin-form-field textarea {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid var(--df-border-soft);
+    border-radius: 9px;
+    outline: 0;
+    color: var(--df-white);
+    background-color: rgba(255, 255, 255, 0.055);
+    transition: border-color var(--df-transition), box-shadow var(--df-transition), background-color var(--df-transition);
+}
+
+#adminFormModal .admin-form-field input,
+#adminFormModal .admin-form-field select {
+    height: 46px;
+    padding: 0 13px;
+}
+
+#adminFormModal .admin-form-field textarea {
+    min-height: 112px;
+    padding: 12px 13px;
+    resize: vertical;
+}
+
+#adminFormModal .admin-form-field input::placeholder,
+#adminFormModal .admin-form-field textarea::placeholder {
+    color: #8d8179;
+}
+
+#adminFormModal .admin-form-field input:hover,
+#adminFormModal .admin-form-field select:hover,
+#adminFormModal .admin-form-field textarea:hover {
+    border-color: rgba(212, 175, 55, 0.32);
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+#adminFormModal .admin-form-field input:focus,
+#adminFormModal .admin-form-field select:focus,
+#adminFormModal .admin-form-field textarea:focus {
+    border-color: var(--df-gold);
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.13);
+}
+
+#adminFormModal .admin-form-field select {
+    cursor: pointer;
+    color-scheme: dark;
+}
+
+#adminFormModal .admin-form-field select option {
+    color: var(--df-white);
+    background: #241116;
+}
+
+#adminFormModal .admin-form-message:empty {
+    display: none;
+}
+
+#adminFormModal .admin-form-message {
+    grid-column: 1 / -1;
+    margin-top: 16px;
+    color: var(--df-gold-light);
+    font-size: 12px;
+}
+
+#adminFormModal .admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 11px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--df-border-soft);
+}
+
+#adminFormModal .admin-form-actions .secondary-button,
+#adminFormModal .admin-form-actions .primary-button {
+    width: auto;
+    min-width: 120px;
+}
+
+#adminFormModal .admin-form-actions .secondary-button {
+    border: 1px solid var(--df-border-soft);
+    border-radius: 9px;
+    color: var(--df-white-soft);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+#adminFormModal .admin-form-actions .secondary-button:hover {
+    border-color: rgba(212, 175, 55, 0.35);
+    color: var(--df-white);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+@media (max-width: 680px) {
+    #adminFormModal .modal-overlay {
+        place-items: end center;
+        padding: 10px;
+    }
+
+    #adminFormModal .admin-form-modal-box {
+        max-height: calc(100vh - 20px);
+        padding: 24px 18px;
+        border-radius: 16px 16px 12px 12px;
+    }
+
+    #adminFormModal .admin-form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    #adminFormModal .admin-form-full {
+        grid-column: auto;
+    }
+
+    #adminFormModal .admin-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    #adminFormModal .admin-form-actions .secondary-button,
+    #adminFormModal .admin-form-actions .primary-button {
+        width: 100%;
+        min-height: 45px;
+    }
+}
